@@ -1,9 +1,10 @@
 using UnityEngine;
+using Unity.Netcode;
 using Events;
 
 namespace Actors.Player
 {
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : NetworkBehaviour
     {
         [Header("Movement")]
         [SerializeField] [Range(0f, 50f)] private float movementSpeed = 5f;
@@ -32,6 +33,8 @@ namespace Actors.Player
 
         private void OnMove(Vector2 input)
         {
+            if (!IsOwner) return;
+            
             _movementDirection = new Vector3(input.x, 0f, input.y);
         }
         
