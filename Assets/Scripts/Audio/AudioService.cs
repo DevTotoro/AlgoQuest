@@ -12,5 +12,10 @@ namespace Audio
             
             Destroy(audioSource, audioClip.Length);
         }
+        
+        public static void SetVolume(float volume)
+        {
+            AudioListener.volume = volume;
+        }
     }
 }
