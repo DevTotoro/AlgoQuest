@@ -42,7 +42,7 @@ namespace Actors.Player
 
         private void HandleMovement()
         {
-            if (_movementDirection == Vector3.zero) return;
+            if (Core.GameManager.Singleton.IsPaused || _movementDirection == Vector3.zero) return;
             
             transform.Translate(_movementDirection * _movementDistance, Space.World);
         }

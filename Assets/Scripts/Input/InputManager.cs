@@ -6,22 +6,12 @@ namespace Input
 {
     public class InputManager : MonoBehaviour, InputControls.IPlayerActions
     {
-        private static InputManager Singleton { get; set; }
-        
         private InputControls _inputControls;
 
         private void OnEnable()
         {
-            if (Singleton != null)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            
-            Singleton = this;
-            DontDestroyOnLoad(gameObject);
-            
             _inputControls = new InputControls();
+            
             _inputControls.Player.SetCallbacks(this);
             _inputControls.Enable();
         }
@@ -36,6 +26,11 @@ namespace Input
         public void OnMove(InputAction.CallbackContext context)
         {
             EventManager.Singleton.InputEvents.EmitMoveEvent(context.ReadValue<Vector2>());
+        }
+
+        public void OnPause(InputAction.CallbackContext context)
+        {
+            if (context.performed) EventManager.Singleton.InputEvents.EmitPauseEvent();
         }
     }
 }
