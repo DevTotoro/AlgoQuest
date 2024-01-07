@@ -8,5 +8,10 @@ namespace Core
         {
             Application.Quit();
         }
+        
+        public static void CopyToClipboard(string text)
+        {
+            GUIUtility.systemCopyBuffer = text;
+        }
     }
 }
