@@ -9,7 +9,7 @@ namespace Actors.Player
     {
         [Header("Movement")]
         [SerializeField] [Range(0f, 50f)] private float movementSpeed = 5f;
-        [SerializeField] [Range(0f, 50f)] private float rotationSpeed = 5f;
+        [SerializeField] [Range(0f, 50f)] private float rotationSpeed = 10f;
 
         [Header("References")]
         [SerializeField] private CinemachineVirtualCamera virtualCamera;
@@ -59,6 +59,8 @@ namespace Actors.Player
             
             _movementDirection = new Vector3(input.x, 0f, input.y);
             _rotationDirection = _movementDirection;
+            
+            EventManager.Singleton.PlayerEvents.EmitMoveEvent(_movementDirection != Vector3.zero);
         }
         
         // ====================

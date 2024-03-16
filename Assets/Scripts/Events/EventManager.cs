@@ -7,6 +7,7 @@ namespace Events
         public static EventManager Singleton { get; private set; }
         
         public InputEvents InputEvents { get; private set; }
+        public PlayerEvents PlayerEvents { get; private set; }
 
         private void OnEnable()
         {
@@ -20,6 +21,7 @@ namespace Events
             DontDestroyOnLoad(gameObject);
             
             InputEvents = new InputEvents();
+            PlayerEvents = new PlayerEvents();
         }
     }
 }
