@@ -1302,8 +1302,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 365ce127c120f4e64b5a8de0cb41fc1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 8981685425961198094, guid: 53e43ab8a6b724a1c829abd4da0975e0,
-    type: 3}
+  playerPrefabs:
+  - {fileID: 8981685425961198094, guid: 53e43ab8a6b724a1c829abd4da0975e0, type: 3}
+  - {fileID: 7231570665452675639, guid: e46da2c7825134db58f009cee428ed7f, type: 3}
+  - {fileID: 6778865724383104253, guid: be7329626a9c54f2ebcb4acdbfff82e4, type: 3}
+  - {fileID: 1135028413223175245, guid: c38a227c38a6648ed83d5d4ac190c8bc, type: 3}
   pauseMenu: {fileID: 1893056774}
 --- !u!1 &1503548041
 GameObject:

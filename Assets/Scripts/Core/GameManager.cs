@@ -7,7 +7,8 @@ namespace Core
     public class GameManager : MonoBehaviour
     {
         [Header("Multiplayer")]
-        [SerializeField] private GameObject playerPrefab;
+        [SerializeField] private GameObject[] playerPrefabs;
+        
         [Header("UI Elements")]
         [SerializeField] private GameObject pauseMenu;
 
@@ -37,6 +38,8 @@ namespace Core
             Debug.Log($"Client {clientId} loaded scene {sceneName}");
             
             if (!NetworkManager.Singleton.IsServer) return;
+            
+            var playerPrefab = playerPrefabs[NetworkManager.Singleton.ConnectedClients.Count - 1];
             
             var player = Instantiate(playerPrefab).GetComponent<NetworkObject>();
             player.SpawnAsPlayerObject(clientId, true);
