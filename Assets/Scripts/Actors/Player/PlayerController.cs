@@ -82,8 +82,9 @@ namespace Actors.Player
         private void OnInteract()
         {
             if (!enableInteractions || _currentContainer == null) return;
-            
-            _currentContainer.Interact();
+
+            _currentContainer.Interact(new ContainerData
+                { State = ContainerState.Full, Value = Mathf.RoundToInt(Random.Range(0f, 100f)) });
         }
         
         // ====================
