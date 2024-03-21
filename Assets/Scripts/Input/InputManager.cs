@@ -27,6 +27,11 @@ namespace Input
         {
             EventManager.Singleton.InputEvents.EmitMoveEvent(context.ReadValue<Vector2>());
         }
+        
+        public void OnInteract(InputAction.CallbackContext context)
+        {
+            if (context.performed) EventManager.Singleton.InputEvents.EmitInteractEvent();
+        }
 
         public void OnPause(InputAction.CallbackContext context)
         {

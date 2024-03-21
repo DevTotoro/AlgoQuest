@@ -350,6 +350,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   movementSpeed: 5
   rotationSpeed: 10
+  enableInteractions: 1
+  interactionDistance: 1.5
+  interactionOffset: {x: 0, y: 1, z: 0}
+  interactionLayerMask:
+    serializedVersion: 2
+    m_Bits: 128
   virtualCamera: {fileID: 5631238928922316757}
   audioListener: {fileID: 5688010126877135559}
 --- !u!1 &3718127698513844516
