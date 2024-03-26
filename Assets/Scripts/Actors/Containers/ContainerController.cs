@@ -37,8 +37,6 @@ namespace Actors.Containers
         [Space]
         [SerializeField] private TMPro.TextMeshProUGUI valueText;
         
-        private System.Action<ContainerData> _callback;
-
         private readonly NetworkVariable<ContainerData> _networkData = new();
 
         private void Awake()
@@ -56,19 +54,24 @@ namespace Actors.Containers
         }
         
         [Rpc(SendTo.Server)]
-        private void SetDataRpc(ContainerData data)
+        private void SetDataRpc(ContainerData data, RpcParams rpcParams = default)
         {
+            SendContainerDataUpdatedEventRpc(rpcParams.Receive.SenderClientId, _networkData.Value);
+            
             _networkData.Value = data;
+        }
+        
+        [Rpc(SendTo.Everyone)]
+        private void SendContainerDataUpdatedEventRpc(ulong senderClientId, ContainerData data)
+        {
+            Events.EventManager.Singleton.ContainerEvents.EmitContainerDataUpdatedEvent(senderClientId, data);
         }
         
         // ====================
         
-        public void Interact(ContainerData data, System.Action<ContainerData> callback)
+        public void Interact(ContainerData data)
         {
-            if (_networkData.Value.State == ContainerState.Locked || data.State == ContainerState.Locked ||
-                data.Value == _networkData.Value.Value || _callback != null) return;
-            
-            _callback = callback;
+            if (_networkData.Value.State == ContainerState.Locked || data.State == ContainerState.Locked) return;
             
             ContainerData newData;
 
@@ -115,9 +118,6 @@ namespace Actors.Containers
         private void OnDataChanged(ContainerData previousData, ContainerData newData)
         {
             UpdateVisuals();
-            
-            _callback?.Invoke(previousData);
-            _callback = null;
         }
         
         // ====================

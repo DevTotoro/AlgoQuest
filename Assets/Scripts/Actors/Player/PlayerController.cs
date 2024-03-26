@@ -39,19 +39,29 @@ namespace Actors.Player
         // Interactions
         private readonly Collider[] _collidersInRange = new Collider[10];
         private IInteractive<ContainerData> _currentContainer;
-        
-        private ContainerData _containerData;
+
+        private readonly NetworkVariable<ContainerData> _networkData = new(default,
+            NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
         private void OnEnable()
         {
             EventManager.Singleton.InputEvents.MoveEvent += OnMove;
             EventManager.Singleton.InputEvents.InteractEvent += OnInteract;
+            
+            EventManager.Singleton.ContainerEvents.ContainerDataUpdatedEvent += OnContainerDataUpdated;
         }
         
         private void OnDisable()
         {
             EventManager.Singleton.InputEvents.MoveEvent -= OnMove;
             EventManager.Singleton.InputEvents.InteractEvent -= OnInteract;
+            
+            EventManager.Singleton.ContainerEvents.ContainerDataUpdatedEvent -= OnContainerDataUpdated;
+        }
+
+        private void Awake()
+        {
+            _networkData.OnValueChanged += OnDataChanged;
         }
 
         private void Update()
@@ -75,9 +85,8 @@ namespace Actors.Player
             audioListener.enabled = true;
             
             virtualCamera.Priority = 1;
-
-            _containerData = new ContainerData { State = initialState, Value = initialValue };
-            UpdateContainerVisuals();
+            
+            _networkData.Value = new ContainerData { State = initialState, Value = initialValue };
         }
         
         // ====================
@@ -96,12 +105,18 @@ namespace Actors.Player
         {
             if (!enableInteractions || _currentContainer == null) return;
 
-            _currentContainer.Interact(_containerData, OnInteractSuccess);
+            _currentContainer.Interact(_networkData.Value);
         }
         
-        private void OnInteractSuccess(ContainerData data)
+        private void OnContainerDataUpdated(ulong senderClientId, ContainerData data)
         {
-            _containerData = data;
+            if (!IsOwner || senderClientId != OwnerClientId) return;
+            
+            _networkData.Value = data;
+        }
+        
+        private void OnDataChanged(ContainerData previousData, ContainerData newData)
+        {
             UpdateContainerVisuals();
         }
         
@@ -163,10 +178,10 @@ namespace Actors.Player
         
         private void UpdateContainerVisuals()
         {
-            emptyContainer.SetActive(_containerData.State == ContainerState.Empty);
-            fullContainer.SetActive(_containerData.State == ContainerState.Full);
+            emptyContainer.SetActive(_networkData.Value.State == ContainerState.Empty);
+            fullContainer.SetActive(_networkData.Value.State == ContainerState.Full);
             
-            valueText.text = _containerData.Value.ToString();
+            valueText.text = _networkData.Value.Value.ToString();
         }
         
         // ====================

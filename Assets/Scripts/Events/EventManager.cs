@@ -8,6 +8,7 @@ namespace Events
         
         public InputEvents InputEvents { get; private set; }
         public PlayerEvents PlayerEvents { get; private set; }
+        public ContainerEvents ContainerEvents { get; private set; }
 
         private void OnEnable()
         {
@@ -22,6 +23,7 @@ namespace Events
             
             InputEvents = new InputEvents();
             PlayerEvents = new PlayerEvents();
+            ContainerEvents = new ContainerEvents();
         }
     }
 }
