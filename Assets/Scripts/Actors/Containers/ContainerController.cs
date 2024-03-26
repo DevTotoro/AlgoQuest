@@ -25,7 +25,11 @@ namespace Actors.Containers
     [RequireComponent(typeof(Collider))]
     public class ContainerController : NetworkBehaviour, Interfaces.IInteractive<ContainerData>
     {
-        [Header("Visuals")]
+        [Header("Data")]
+        [SerializeField] private ContainerState initialState = ContainerState.Locked;
+        [SerializeField] private int initialValue;
+        
+        [Header("References")]
         [SerializeField] private GameObject emptyContainer;
         [SerializeField] private GameObject fullContainer;
         [SerializeField] private GameObject lockedContainer;
@@ -33,18 +37,12 @@ namespace Actors.Containers
         [Space]
         [SerializeField] private TMPro.TextMeshProUGUI valueText;
         
-        [Header("Data")]
-        [SerializeField] private ContainerState initialState = ContainerState.Locked;
-        [SerializeField] private int initialValue;
+        private System.Action<ContainerData> _callback;
 
-        private NetworkVariable<ContainerData> _networkData = new();
+        private readonly NetworkVariable<ContainerData> _networkData = new();
 
         private void Awake()
         {
-            if (IsServer)
-                _networkData = new NetworkVariable<ContainerData>(new ContainerData
-                    { State = initialState, Value = initialValue });
-            
             _networkData.OnValueChanged += OnDataChanged;
         }
         
@@ -52,6 +50,8 @@ namespace Actors.Containers
         
         public override void OnNetworkSpawn()
         {
+            if (IsServer) _networkData.Value = new ContainerData { State = initialState, Value = initialValue };
+            
             UpdateVisuals();
         }
         
@@ -63,9 +63,46 @@ namespace Actors.Containers
         
         // ====================
         
-        public void Interact(ContainerData data)
+        public void Interact(ContainerData data, System.Action<ContainerData> callback)
         {
-            SetDataRpc(data);
+            if (_networkData.Value.State == ContainerState.Locked || data.State == ContainerState.Locked ||
+                data.Value == _networkData.Value.Value || _callback != null) return;
+            
+            _callback = callback;
+            
+            ContainerData newData;
+
+            switch (_networkData.Value.State)
+            {
+                case ContainerState.Empty: // Container empty
+                    if (data.State == ContainerState.Empty) return;
+                    
+                    newData = new ContainerData { State = ContainerState.Full, Value = data.Value };
+                    break;
+                
+                case ContainerState.Full: // Container full
+                    switch (data.State)
+                    {
+                        case ContainerState.Empty: // Data empty
+                            newData = new ContainerData { State = ContainerState.Empty, Value = 0 };
+                            break;
+                        
+                        case ContainerState.Full: // Data full
+                            newData = new ContainerData { State = ContainerState.Full, Value = data.Value };
+                            break;
+                        
+                        case ContainerState.Locked: // Data locked
+                        default:
+                            return;
+                    }
+                    break;
+                
+                case ContainerState.Locked: // Container locked
+                default:
+                    return;
+            }
+            
+            SetDataRpc(newData);
         }
         
         public void Highlight(bool highlight)
@@ -78,6 +115,9 @@ namespace Actors.Containers
         private void OnDataChanged(ContainerData previousData, ContainerData newData)
         {
             UpdateVisuals();
+            
+            _callback?.Invoke(previousData);
+            _callback = null;
         }
         
         // ====================

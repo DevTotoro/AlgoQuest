@@ -19,9 +19,17 @@ namespace Actors.Player
         [SerializeField] private Vector3 interactionOffset = Vector3.zero;
         [SerializeField] private LayerMask interactionLayerMask;
         
+        [Header("Container")]
+        [SerializeField] private ContainerState initialState = ContainerState.Empty;
+        [SerializeField] private int initialValue;
+        
         [Header("References")]
         [SerializeField] private CinemachineVirtualCamera virtualCamera;
         [SerializeField] private AudioListener audioListener;
+        [Space]
+        [SerializeField] private GameObject emptyContainer;
+        [SerializeField] private GameObject fullContainer;
+        [SerializeField] private TMPro.TextMeshProUGUI valueText;
         
         // Movement
         private Vector3 _movementDirection = Vector3.zero;
@@ -31,6 +39,8 @@ namespace Actors.Player
         // Interactions
         private readonly Collider[] _collidersInRange = new Collider[10];
         private IInteractive<ContainerData> _currentContainer;
+        
+        private ContainerData _containerData;
 
         private void OnEnable()
         {
@@ -65,6 +75,9 @@ namespace Actors.Player
             audioListener.enabled = true;
             
             virtualCamera.Priority = 1;
+
+            _containerData = new ContainerData { State = initialState, Value = initialValue };
+            UpdateContainerVisuals();
         }
         
         // ====================
@@ -83,8 +96,13 @@ namespace Actors.Player
         {
             if (!enableInteractions || _currentContainer == null) return;
 
-            _currentContainer.Interact(new ContainerData
-                { State = ContainerState.Full, Value = Mathf.RoundToInt(Random.Range(0f, 100f)) });
+            _currentContainer.Interact(_containerData, OnInteractSuccess);
+        }
+        
+        private void OnInteractSuccess(ContainerData data)
+        {
+            _containerData = data;
+            UpdateContainerVisuals();
         }
         
         // ====================
@@ -141,6 +159,14 @@ namespace Actors.Player
             _currentContainer?.Highlight(false);
             _currentContainer = closestInteractive;
             _currentContainer.Highlight(true);
+        }
+        
+        private void UpdateContainerVisuals()
+        {
+            emptyContainer.SetActive(_containerData.State == ContainerState.Empty);
+            fullContainer.SetActive(_containerData.State == ContainerState.Full);
+            
+            valueText.text = _containerData.Value.ToString();
         }
         
         // ====================
