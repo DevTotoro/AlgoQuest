@@ -35,8 +35,6 @@ namespace Core
         // Called per joined client
         private void OnSceneLoaded(ulong clientId, string sceneName, LoadSceneMode loadSceneMode)
         {
-            Debug.Log($"Client {clientId} loaded scene {sceneName}");
-            
             if (!NetworkManager.Singleton.IsServer) return;
             
             var playerPrefab = playerPrefabs[NetworkManager.Singleton.ConnectedClients.Count - 1];

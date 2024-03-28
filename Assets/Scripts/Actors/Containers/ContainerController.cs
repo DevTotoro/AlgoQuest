@@ -38,6 +38,8 @@ namespace Actors.Containers
         [SerializeField] private TMPro.TextMeshProUGUI valueText;
         
         private readonly NetworkVariable<ContainerData> _networkData = new();
+        
+        public ContainerData Data => _networkData.Value;
 
         private void Awake()
         {
