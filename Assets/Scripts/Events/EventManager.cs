@@ -7,6 +7,7 @@ namespace Events
         public static EventManager Singleton { get; private set; }
         
         public InputEvents InputEvents { get; private set; }
+        public GameplayEvents GameplayEvents { get; private set; }
         public PlayerEvents PlayerEvents { get; private set; }
         public ContainerEvents ContainerEvents { get; private set; }
 
@@ -22,6 +23,7 @@ namespace Events
             DontDestroyOnLoad(gameObject);
             
             InputEvents = new InputEvents();
+            GameplayEvents = new GameplayEvents();
             PlayerEvents = new PlayerEvents();
             ContainerEvents = new ContainerEvents();
         }

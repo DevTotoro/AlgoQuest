@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using Cinemachine;
+using Core;
 using Events;
 using Interfaces;
 using Actors.Containers;
@@ -49,6 +50,8 @@ namespace Actors.Player
             EventManager.Singleton.InputEvents.InteractEvent += OnInteract;
             
             EventManager.Singleton.ContainerEvents.ContainerDataUpdatedEvent += OnContainerDataUpdated;
+            
+            EventManager.Singleton.GameplayEvents.RetryEvent += OnRetry;
         }
         
         private void OnDisable()
@@ -57,6 +60,8 @@ namespace Actors.Player
             EventManager.Singleton.InputEvents.InteractEvent -= OnInteract;
             
             EventManager.Singleton.ContainerEvents.ContainerDataUpdatedEvent -= OnContainerDataUpdated;
+            
+            EventManager.Singleton.GameplayEvents.RetryEvent -= OnRetry;
         }
 
         private void Awake()
@@ -105,7 +110,8 @@ namespace Actors.Player
         
         private void OnInteract()
         {
-            if (!IsOwner || !enableInteractions || _currentContainer == null) return;
+            if (!IsOwner || !GameManager.Singleton.ShouldBeInteractive || !enableInteractions ||
+                _currentContainer == null) return;
 
             _currentContainer.Interact(_networkData.Value);
         }
@@ -122,18 +128,25 @@ namespace Actors.Player
             UpdateContainerVisuals();
         }
         
+        private void OnRetry()
+        {
+            if (!IsOwner) return;
+            
+            _networkData.Value = new ContainerData { State = initialState, Value = initialValue };
+        }
+        
         // ====================
 
         private void HandleMovement()
         {
-            if (Core.GameManager.Singleton.IsPaused || _movementDirection == Vector3.zero) return;
+            if (!GameManager.Singleton.ShouldBeInteractive || _movementDirection == Vector3.zero) return;
             
             transform.Translate(_movementDirection * _movementDistance, Space.World);
         }
 
         private void HandleRotation()
         {
-            if (Core.GameManager.Singleton.IsPaused || _rotationDirection == Vector3.zero) return;
+            if (!GameManager.Singleton.ShouldBeInteractive || _rotationDirection == Vector3.zero) return;
             
             var targetRotation = Quaternion.LookRotation(_rotationDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);

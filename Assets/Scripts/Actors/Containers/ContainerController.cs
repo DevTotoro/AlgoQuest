@@ -60,11 +60,11 @@ namespace Actors.Containers
         }
         
         [Rpc(SendTo.Server)]
-        private void SetDataRpc(ContainerData data, RpcParams rpcParams = default)
+        private void SetDataRpc(ContainerData data, bool reset = false, RpcParams rpcParams = default)
         {
             SendContainerDataUpdatedEventRpc(rpcParams.Receive.SenderClientId, _networkData.Value);
 
-            if (AlgorithmIndex != -1) ContainerDataChangedEvent?.Invoke(AlgorithmIndex, data.Value);
+            if (!reset && AlgorithmIndex != -1) ContainerDataChangedEvent?.Invoke(AlgorithmIndex, data.Value);
             
             _networkData.Value = data;
         }
@@ -119,6 +119,13 @@ namespace Actors.Containers
         public void Highlight(bool highlight)
         {
             highlightContainer.SetActive(highlight);
+        }
+
+        public void Reset()
+        {
+            if (_networkData.Value.State == ContainerState.Locked) return;
+            
+            SetDataRpc(new ContainerData { State = initialState, Value = initialValue }, true);
         }
         
         // ====================

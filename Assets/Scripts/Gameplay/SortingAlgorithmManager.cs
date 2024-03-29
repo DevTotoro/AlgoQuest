@@ -32,6 +32,14 @@ namespace Gameplay
         private int _swapIndex;
         private bool _firstContainerSwapSuccess;
 
+        private void Awake()
+        {
+            Events.EventManager.Singleton.GameplayEvents.RetryEvent += OnRetryEvent;
+            Events.EventManager.Singleton.GameplayEvents.RequestRetryEvent += OnRequestRetryEvent;
+        }
+        
+        // ====================
+
         public override void OnNetworkSpawn()
         {
             if (!IsServer) return;
@@ -49,6 +57,24 @@ namespace Gameplay
             _swapIndex = 0;
         }
         
+        [Rpc(SendTo.Everyone)]
+        private void SendGameOverEventRpc()
+        {
+            Events.EventManager.Singleton.GameplayEvents.EmitGameOverEvent();
+        }
+        
+        [Rpc(SendTo.Server)]
+        private void SendRequestRetryEventRpc()
+        {
+            SendRetryEventRpc();
+        }
+        
+        [Rpc(SendTo.Everyone)]
+        private void SendRetryEventRpc()
+        {
+            Events.EventManager.Singleton.GameplayEvents.EmitRetryEvent();
+        }
+        
         // ====================
         
         private void OnContainerValueChanged(int containerIndex, int value)
@@ -59,7 +85,7 @@ namespace Gameplay
             
             if (containerIndex != container1State.Index && containerIndex != container2State.Index)
             {
-                Debug.Log("Invalid container index - GAME OVER");
+                SendGameOverEventRpc();
                 
                 return;
             }
@@ -84,12 +110,27 @@ namespace Gameplay
             
             if (!possibleValues.Contains(value))
             {
-                Debug.Log("Invalid value - GAME OVER");
+                SendGameOverEventRpc();
                 
                 return;
             }
             
             _firstContainerSwapSuccess = false;
+        }
+
+        private void OnRetryEvent()
+        {
+            if (!IsServer) return;
+            
+            _swapIndex = 0;
+            
+            foreach (var container in containers)
+                container.Reset();
+        }
+        
+        private void OnRequestRetryEvent()
+        {
+            SendRequestRetryEventRpc();
         }
         
         // ====================

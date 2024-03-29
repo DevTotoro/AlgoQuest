@@ -11,10 +11,14 @@ namespace Core
         
         [Header("UI Elements")]
         [SerializeField] private GameObject pauseMenu;
+        [SerializeField] private GameObject gameOverMenu;
 
+        private bool _isPaused;
+        private bool _isGameOver;
+        
         public static GameManager Singleton { get; private set; }
         
-        public bool IsPaused { get; private set; }
+        public bool ShouldBeInteractive => !_isPaused && !_isGameOver;
         
         private void OnEnable()
         {
@@ -30,6 +34,9 @@ namespace Core
             NetworkManager.Singleton.SceneManager.OnLoadComplete += OnSceneLoaded;
             
             Events.EventManager.Singleton.InputEvents.PauseEvent += OnPause;
+            
+            Events.EventManager.Singleton.GameplayEvents.GameOverEvent += OnGameOver;
+            Events.EventManager.Singleton.GameplayEvents.RetryEvent += OnRetry;
         }
 
         // Called per joined client
@@ -45,9 +52,25 @@ namespace Core
 
         private void OnPause()
         {
-            IsPaused = !IsPaused;
+            if (_isGameOver) return;
             
-            pauseMenu.SetActive(IsPaused);
+            _isPaused = !_isPaused;
+            
+            pauseMenu.SetActive(_isPaused);
+        }
+
+        private void OnGameOver()
+        {
+            _isGameOver = true;
+            
+            gameOverMenu.SetActive(true);
+        }
+        
+        private void OnRetry()
+        {
+            _isGameOver = false;
+            
+            gameOverMenu.SetActive(false);
         }
     }
 }
