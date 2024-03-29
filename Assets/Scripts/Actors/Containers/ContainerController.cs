@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
+using UnityEngine.Events;
 
 namespace Actors.Containers
 {
@@ -40,6 +41,9 @@ namespace Actors.Containers
         private readonly NetworkVariable<ContainerData> _networkData = new();
         
         public ContainerData Data => _networkData.Value;
+        public int AlgorithmIndex { get; set; } = -1;
+        
+        public event UnityAction<int, int> ContainerDataChangedEvent;
 
         private void Awake()
         {
@@ -59,6 +63,8 @@ namespace Actors.Containers
         private void SetDataRpc(ContainerData data, RpcParams rpcParams = default)
         {
             SendContainerDataUpdatedEventRpc(rpcParams.Receive.SenderClientId, _networkData.Value);
+
+            if (AlgorithmIndex != -1) ContainerDataChangedEvent?.Invoke(AlgorithmIndex, data.Value);
             
             _networkData.Value = data;
         }

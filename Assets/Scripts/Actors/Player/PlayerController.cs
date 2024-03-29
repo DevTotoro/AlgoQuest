@@ -78,6 +78,8 @@ namespace Actors.Player
             if (!IsOwner)
             {
                 virtualCamera.Priority = 0;
+                
+                UpdateContainerVisuals();
 
                 return;
             }
@@ -103,7 +105,7 @@ namespace Actors.Player
         
         private void OnInteract()
         {
-            if (!enableInteractions || _currentContainer == null) return;
+            if (!IsOwner || !enableInteractions || _currentContainer == null) return;
 
             _currentContainer.Interact(_networkData.Value);
         }

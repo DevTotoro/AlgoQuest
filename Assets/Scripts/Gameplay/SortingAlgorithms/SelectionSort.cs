@@ -4,9 +4,9 @@ namespace Gameplay.SortingAlgorithms
 {
     public static class SelectionSort
     {
-        public static IEnumerable<(int, int)> Run(IList<int> values)
+        public static IList<(ContainerAlgorithmState, ContainerAlgorithmState)> Run(IList<int> values)
         {
-            var swaps = new List<(int, int)>();
+            var containerStates = new List<(ContainerAlgorithmState, ContainerAlgorithmState)>();
             
             for (var i = 0; i < values.Count - 1; i++)
             {
@@ -22,10 +22,24 @@ namespace Gameplay.SortingAlgorithms
                 
                 (values[i], values[minIndex]) = (values[minIndex], values[i]);
                 
-                swaps.Add((i, minIndex));
+                var containerState1 = new ContainerAlgorithmState
+                {
+                    Index = i,
+                    TargetValue = values[i],
+                    PossibleValues = new[] { values[i], values[minIndex], 0 }
+                };
+                
+                var containerState2 = new ContainerAlgorithmState
+                {
+                    Index = minIndex,
+                    TargetValue = values[minIndex],
+                    PossibleValues = new[] { values[i], values[minIndex], 0 }
+                };
+                
+                containerStates.Add((containerState1, containerState2));
             }
 
-            return swaps;
+            return containerStates;
         }
     }
 }

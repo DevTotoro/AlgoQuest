@@ -4,9 +4,9 @@ namespace Gameplay.SortingAlgorithms
 {
     public static class BubbleSort
     {
-        public static IEnumerable<(int, int)> Run(IList<int> values)
+        public static IList<(ContainerAlgorithmState, ContainerAlgorithmState)> Run(IList<int> values)
         {
-            var swaps = new List<(int, int)>();
+            var containerStates = new List<(ContainerAlgorithmState, ContainerAlgorithmState)>();
 
             for (var i = 0; i < values.Count - 1; i++)
             {
@@ -16,11 +16,25 @@ namespace Gameplay.SortingAlgorithms
 
                     (values[j], values[j + 1]) = (values[j + 1], values[j]);
 
-                    swaps.Add((j, j + 1));
+                    var containerState1 = new ContainerAlgorithmState
+                    {
+                        Index = j,
+                        TargetValue = values[j],
+                        PossibleValues = new[] { values[j], values[j + 1], 0 }
+                    };
+                    
+                    var containerState2 = new ContainerAlgorithmState
+                    {
+                        Index = j + 1,
+                        TargetValue = values[j + 1],
+                        PossibleValues = new[] { values[j], values[j + 1], 0 }
+                    };
+                    
+                    containerStates.Add((containerState1, containerState2));
                 }
             }
 
-            return swaps;
+            return containerStates;
         }
     }
 }
