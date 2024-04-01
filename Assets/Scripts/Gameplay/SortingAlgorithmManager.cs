@@ -43,7 +43,16 @@ namespace Gameplay
         public override void OnNetworkSpawn()
         {
             if (!IsServer) return;
-
+            
+            if (CheckContainersSpawned())
+                InitializeRpc();
+            else
+                Events.EventManager.Singleton.ContainerEvents.ContainerSpawnedEvent += OnContainerSpawnedEvent;
+        }
+        
+        [Rpc(SendTo.Server)]
+        private void InitializeRpc()
+        {
             var values = new int[containers.Length];
             for (var i = 0; i < containers.Length; i++)
             {
@@ -133,6 +142,17 @@ namespace Gameplay
             SendRequestRetryEventRpc();
         }
         
+        private void OnContainerSpawnedEvent()
+        {
+            if (!IsServer) return;
+            
+            if (!CheckContainersSpawned()) return;
+            
+            Events.EventManager.Singleton.ContainerEvents.ContainerSpawnedEvent -= OnContainerSpawnedEvent;
+            
+            InitializeRpc();
+        }
+        
         // ====================
 
         private IList<(ContainerAlgorithmState, ContainerAlgorithmState)> RunAlgorithm(IList<int> values)
@@ -157,6 +177,11 @@ namespace Gameplay
             }
             
             _firstContainerSwapSuccess = false;
+        }
+        
+        private bool CheckContainersSpawned()
+        {
+            return containers.All(container => container.IsSpawned);
         }
     }
 }

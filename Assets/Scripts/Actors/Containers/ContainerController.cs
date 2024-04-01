@@ -54,7 +54,12 @@ namespace Actors.Containers
         
         public override void OnNetworkSpawn()
         {
-            if (IsServer) _networkData.Value = new ContainerData { State = initialState, Value = initialValue };
+            if (IsServer)
+            {
+                _networkData.Value = new ContainerData { State = initialState, Value = initialValue };
+                
+                Events.EventManager.Singleton.ContainerEvents.EmitContainerSpawnedEvent();
+            }
             
             UpdateVisuals();
         }
