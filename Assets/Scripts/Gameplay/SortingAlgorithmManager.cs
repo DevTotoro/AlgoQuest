@@ -32,14 +32,24 @@ namespace Gameplay
         private int _swapIndex;
         private bool _firstContainerSwapSuccess;
 
+        private readonly Core.Timer _timer = new();
+
         private void Awake()
         {
             Events.EventManager.Singleton.GameplayEvents.RetryEvent += OnRetryEvent;
             Events.EventManager.Singleton.GameplayEvents.RequestRetryEvent += OnRequestRetryEvent;
         }
+
+        private void Update()
+        {
+            if (!IsServer) return;
+            
+            if (_timer.Run())
+                SendTimerUpdatedEventRpc(_timer.TimeString);
+        }
         
         // ====================
-
+        
         public override void OnNetworkSpawn()
         {
             if (!IsServer) return;
@@ -64,11 +74,15 @@ namespace Gameplay
 
             _swaps = RunAlgorithm(values);
             _swapIndex = 0;
+            
+            _timer.Start();
         }
         
         [Rpc(SendTo.Everyone)]
         private void SendGameOverEventRpc()
         {
+            _timer.Stop();
+            
             Events.EventManager.Singleton.GameplayEvents.EmitGameOverEvent();
         }
         
@@ -82,6 +96,12 @@ namespace Gameplay
         private void SendRetryEventRpc()
         {
             Events.EventManager.Singleton.GameplayEvents.EmitRetryEvent();
+        }
+
+        [Rpc(SendTo.Everyone)]
+        private void SendTimerUpdatedEventRpc(string time)
+        {
+            Events.EventManager.Singleton.GameplayEvents.EmitTimerUpdatedEvent(time);
         }
         
         // ====================
@@ -135,6 +155,9 @@ namespace Gameplay
             
             foreach (var container in containers)
                 container.Reset();
+            
+            _timer.Reset();
+            _timer.Start();
         }
         
         private void OnRequestRetryEvent()
@@ -172,6 +195,10 @@ namespace Gameplay
             if (_swapIndex >= _swaps.Count)
             {
                 Debug.Log("Algorithm completed");
+                
+                _timer.Stop();
+                
+                Debug.Log($"Time elapsed: {_timer.TimeString}");
 
                 return;
             }

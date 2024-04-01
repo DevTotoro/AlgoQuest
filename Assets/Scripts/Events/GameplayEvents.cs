@@ -8,6 +8,8 @@ namespace Events
         public event UnityAction RetryEvent;
         public event UnityAction RequestRetryEvent;
         
+        public event UnityAction<string> TimerUpdatedEvent;
+        
         public void EmitGameOverEvent()
         {
             GameOverEvent?.Invoke();
@@ -21,6 +23,11 @@ namespace Events
         public void EmitRequestRetryEvent()
         {
             RequestRetryEvent?.Invoke();
+        }
+        
+        public void EmitTimerUpdatedEvent(string time)
+        {
+            TimerUpdatedEvent?.Invoke(time);
         }
     }
 }
