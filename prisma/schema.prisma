@@ -19,5 +19,30 @@ model Session {
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
+  algorithms Algorithm[]
+
   @@map("sessions")
+}
+
+model Algorithm {
+  id     String           @id @default(uuid())
+  type   AlgorithmType
+  status CompletionStatus
+  time   Int
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  sessions Session[]
+
+  @@map("algorithms")
+}
+
+enum AlgorithmType {
+  BUBBLE_SORT
+  SELECTION_SORT
+}
+
+enum CompletionStatus {
+  SUCCESS
+  FAILURE
 }
