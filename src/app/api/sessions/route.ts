@@ -22,10 +22,12 @@ const POST = async (request: NextRequest) => {
     return data;
   }
 
+  data.username = data.username.toLowerCase();
+
   try {
     const session = await db.session.create({ data });
 
-    return NextResponse.json(session);
+    return NextResponse.json({ id: session.id, username: session.username });
   } catch (error) {
     return httpResponse(HttpCode.INTERNAL_SERVER_ERROR);
   }
