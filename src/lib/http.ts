@@ -4,6 +4,7 @@ import { Schema, ZodIssue } from 'zod';
 export enum HttpCode {
   BAD_REQUEST = 400,
   UNAUTHORIZED = 401,
+  NOT_FOUND = 404,
 
   INTERNAL_SERVER_ERROR = 500,
 }
@@ -11,6 +12,7 @@ export enum HttpCode {
 const responseMessages: { [key in HttpCode]: string } = {
   [HttpCode.BAD_REQUEST]: 'Bad Request',
   [HttpCode.UNAUTHORIZED]: 'Unauthorized',
+  [HttpCode.NOT_FOUND]: 'Not Found',
 
   [HttpCode.INTERNAL_SERVER_ERROR]: 'Internal Server Error',
 };
