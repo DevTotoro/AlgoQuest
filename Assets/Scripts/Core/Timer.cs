@@ -7,11 +7,13 @@ namespace Core
         private float _time;
         private bool _isRunning;
         
-        public float Hours => Mathf.FloorToInt(_time / 3600);
-        public float Minutes => Mathf.FloorToInt(_time / 60);
-        public float Seconds => Mathf.FloorToInt(_time % 60);
+        private float Hours => Mathf.FloorToInt(_time / 3600);
+        private float Minutes => Mathf.FloorToInt(_time / 60);
+        private float Seconds => Mathf.FloorToInt(_time % 60);
         
         public string TimeString => $"{Hours:00}:{Minutes:00}:{Seconds:00}";
+        
+        public int TimeElapsedInMs => Mathf.FloorToInt(_time * 1000);
         
         public void Start()
         {

@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using Unity.Netcode;
 using Actors.Containers;
 using Gameplay.SortingAlgorithms;
+using Unity.Collections;
 
 namespace Gameplay
 {
@@ -33,17 +35,22 @@ namespace Gameplay
         private bool _firstContainerSwapSuccess;
 
         private readonly Core.Timer _timer = new();
+        
+        private readonly NetworkList<FixedString64Bytes> _sessionIds = new();
 
         private void Awake()
         {
             Events.EventManager.Singleton.GameplayEvents.RetryEvent += OnRetryEvent;
             Events.EventManager.Singleton.GameplayEvents.RequestRetryEvent += OnRequestRetryEvent;
+
+            Events.EventManager.Singleton.ContainerEvents.UserInteractedWithContainerEvent +=
+                OnUserInteractedWithContainerEvent;
         }
 
         private void Update()
         {
             if (!IsServer) return;
-            
+
             if (_timer.Run())
                 SendTimerUpdatedEventRpc(_timer.TimeString);
         }
@@ -81,8 +88,6 @@ namespace Gameplay
         [Rpc(SendTo.Everyone)]
         private void SendGameOverEventRpc()
         {
-            _timer.Stop();
-            
             Events.EventManager.Singleton.GameplayEvents.EmitGameOverEvent();
         }
         
@@ -103,10 +108,20 @@ namespace Gameplay
         {
             Events.EventManager.Singleton.GameplayEvents.EmitTimerUpdatedEvent(time);
         }
+
+        [Rpc(SendTo.Server)]
+        private void RegisterSessionIdRpc(string sessionId)
+        {
+            if (_sessionIds.Contains(sessionId)) return;
+            
+            _sessionIds.Add(sessionId);
+            
+            Debug.Log($"Session ID registered: {sessionId}");
+        }
         
         // ====================
         
-        private void OnContainerValueChanged(int containerIndex, int value)
+        private async void OnContainerValueChanged(int containerIndex, int value)
         {
             if (!IsServer) return;
             
@@ -115,6 +130,12 @@ namespace Gameplay
             if (containerIndex != container1State.Index && containerIndex != container2State.Index)
             {
                 SendGameOverEventRpc();
+                
+                _timer.Stop();
+
+                await AlgoQuestServices.Algorithms.Create(algorithm,
+                    AlgoQuestServices.Algorithms.AlgorithmCompletionStatus.Failure, _timer.TimeElapsedInMs,
+                    GetSessionIds());
                 
                 return;
             }
@@ -126,7 +147,7 @@ namespace Gameplay
             if (value == targetValue)
             {
                 if (_firstContainerSwapSuccess)
-                    NextSwap();
+                    await NextSwap();
                 else
                     _firstContainerSwapSuccess = true;
 
@@ -140,6 +161,12 @@ namespace Gameplay
             if (!possibleValues.Contains(value))
             {
                 SendGameOverEventRpc();
+                
+                _timer.Stop();
+
+                await AlgoQuestServices.Algorithms.Create(algorithm,
+                    AlgoQuestServices.Algorithms.AlgorithmCompletionStatus.Failure, _timer.TimeElapsedInMs,
+                    GetSessionIds());
                 
                 return;
             }
@@ -176,6 +203,11 @@ namespace Gameplay
             InitializeRpc();
         }
         
+        private void OnUserInteractedWithContainerEvent(string sessionId)
+        {
+            RegisterSessionIdRpc(sessionId);
+        }
+        
         // ====================
 
         private IList<(ContainerAlgorithmState, ContainerAlgorithmState)> RunAlgorithm(IList<int> values)
@@ -188,7 +220,7 @@ namespace Gameplay
             };
         }
 
-        private void NextSwap()
+        private async Task NextSwap()
         {
             _swapIndex++;
 
@@ -200,6 +232,10 @@ namespace Gameplay
                 
                 Debug.Log($"Time elapsed: {_timer.TimeString}");
 
+                await AlgoQuestServices.Algorithms.Create(algorithm,
+                    AlgoQuestServices.Algorithms.AlgorithmCompletionStatus.Success, _timer.TimeElapsedInMs,
+                    GetSessionIds());
+
                 return;
             }
             
@@ -209,6 +245,16 @@ namespace Gameplay
         private bool CheckContainersSpawned()
         {
             return containers.All(container => container.IsSpawned);
+        }
+        
+        private string[] GetSessionIds()
+        {
+            var sessionIds = new string[_sessionIds.Count];
+            
+            for (var i = 0; i < _sessionIds.Count; i++)
+                sessionIds[i] = _sessionIds[i].ToString();
+            
+            return sessionIds;
         }
     }
 }

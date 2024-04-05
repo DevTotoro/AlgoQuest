@@ -7,6 +7,7 @@ namespace Events
     {
         public event UnityAction<ulong, ContainerData> ContainerDataUpdatedEvent;
         public event UnityAction ContainerSpawnedEvent;
+        public event UnityAction<string> UserInteractedWithContainerEvent;
         
         public void EmitContainerDataUpdatedEvent(ulong senderClientId, ContainerData data)
         {
@@ -16,6 +17,11 @@ namespace Events
         public void EmitContainerSpawnedEvent()
         {
             ContainerSpawnedEvent?.Invoke();
+        }
+        
+        public void EmitUserInteractedWithContainerEvent(string sessionId)
+        {
+            UserInteractedWithContainerEvent?.Invoke(sessionId);
         }
     }
 }

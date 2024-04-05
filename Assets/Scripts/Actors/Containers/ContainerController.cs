@@ -1,3 +1,4 @@
+using AlgoQuestServices;
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.Events;
@@ -119,6 +120,8 @@ namespace Actors.Containers
             }
             
             SetDataRpc(newData);
+            
+            Events.EventManager.Singleton.ContainerEvents.EmitUserInteractedWithContainerEvent(Http.SessionId);
         }
         
         public void Highlight(bool highlight)

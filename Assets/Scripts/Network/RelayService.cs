@@ -48,8 +48,6 @@ namespace Network
             NetworkManager.Singleton.StartHost();
             
             JoinCode = await Unity.Services.Relay.RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-
-            Debug.Log($"Host code: {JoinCode}");
         }
         
         public async Task JoinHost(string code)
@@ -61,7 +59,7 @@ namespace Network
 
             NetworkManager.Singleton.StartClient();
             
-            Debug.Log($"Joined host {code}");
+            JoinCode = code;
         }
         
         private static async Task Authenticate()
