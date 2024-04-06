@@ -7,3 +7,8 @@ export const createAlgorithmSchema = z.object({
   time: z.number(),
   sessions: z.array(z.string()),
 });
+
+export const getHighScoreSchema = z.object({
+  algorithm: z.nativeEnum(AlgorithmType),
+  take: z.string(),
+});

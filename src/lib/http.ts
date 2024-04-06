@@ -29,3 +29,13 @@ export const validateBody = <T>(body: unknown, schema: Schema<T>): T | NextRespo
 
   return result.data;
 };
+
+export const validateParams = <T>(params: unknown, schema: Schema<T>): T | NextResponse => {
+  const result = schema.safeParse(params);
+
+  if (!result.success) {
+    return httpResponse(HttpCode.BAD_REQUEST, undefined, result.error.errors);
+  }
+
+  return result.data;
+};
