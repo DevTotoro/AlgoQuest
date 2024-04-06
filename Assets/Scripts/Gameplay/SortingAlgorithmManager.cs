@@ -37,6 +37,7 @@ namespace Gameplay
         private readonly Core.Timer _timer = new();
         
         private readonly NetworkList<FixedString64Bytes> _sessionIds = new();
+        private readonly NetworkVariable<FixedString4096Bytes> _highScores = new();
 
         private void Awake()
         {
@@ -59,7 +60,12 @@ namespace Gameplay
         
         public override void OnNetworkSpawn()
         {
+            if (_highScores.Value.Length != 0)
+                Events.EventManager.Singleton.GameplayEvents.EmitHighScoresFetchedEvent(_highScores.Value.ToString());
+            
             if (!IsServer) return;
+            
+            GetHighScores();
             
             if (CheckContainersSpawned())
                 InitializeRpc();
@@ -255,6 +261,33 @@ namespace Gameplay
                 sessionIds[i] = _sessionIds[i].ToString();
             
             return sessionIds;
+        }
+        
+        private async void GetHighScores()
+        {
+            var res = await AlgoQuestServices.Algorithms.GetHighScores(algorithm);
+            
+            if (!res.Success)
+            {
+                Debug.LogError("Failed to get high scores");
+                return;
+            }
+            
+            var highScores = res.Data;
+            
+            var highScoresString = "";
+            
+            foreach (var highScore in highScores)
+            {
+                var time = Core.Timer.GetTimeString(highScore.time);
+
+                highScoresString +=
+                    $"- {time} | {string.Join(", ", highScore.sessions.Select(session => session.username))}\n";
+            }
+            
+            _highScores.Value = highScoresString;
+            
+            Events.EventManager.Singleton.GameplayEvents.EmitHighScoresFetchedEvent(highScoresString);
         }
     }
 }

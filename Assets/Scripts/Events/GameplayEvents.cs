@@ -9,6 +9,7 @@ namespace Events
         public event UnityAction RequestRetryEvent;
         
         public event UnityAction<string> TimerUpdatedEvent;
+        public event UnityAction<string> HighScoresFetchedEvent;
         
         public void EmitGameOverEvent()
         {
@@ -28,6 +29,11 @@ namespace Events
         public void EmitTimerUpdatedEvent(string time)
         {
             TimerUpdatedEvent?.Invoke(time);
+        }
+        
+        public void EmitHighScoresFetchedEvent(string highScores)
+        {
+            HighScoresFetchedEvent?.Invoke(highScores);
         }
     }
 }

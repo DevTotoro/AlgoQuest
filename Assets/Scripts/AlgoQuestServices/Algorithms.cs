@@ -40,6 +40,13 @@ namespace AlgoQuestServices
             
             return await Create(data);
         }
+
+        public static async Task<HttpResponse<CreateAlgorithmResponsePayload[]>> GetHighScores(
+            Gameplay.SortingAlgorithm algorithm, int take = 10)
+        {
+            return await Http.Get<CreateAlgorithmResponsePayload[]>($"algorithms/high-scores",
+                $"?algorithm={GetAlgorithmType(algorithm)}&take={take}");
+        }
         
         private static async Task<HttpResponse<CreateAlgorithmResponsePayload>> Create(CreateAlgorithmRequestPayload data)
         {

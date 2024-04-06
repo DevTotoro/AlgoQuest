@@ -28,9 +28,9 @@ namespace AlgoQuestServices
 
         public static string SessionId { get; set; }
 
-        public static async Task<HttpResponse<T>> Get<T>(string uri)
+        public static async Task<HttpResponse<T>> Get<T>(string uri, string query = "")
         {
-            var response = await Client.GetAsync($"{BaseUrl}/{uri}");
+            var response = await Client.GetAsync($"{BaseUrl}/{uri}{query}");
 
             try
             {

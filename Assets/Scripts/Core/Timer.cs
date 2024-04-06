@@ -38,5 +38,15 @@ namespace Core
             
             return true;
         }
+
+        public static string GetTimeString(int ms)
+        {
+            var time = ms / 1000f;
+            var hours = Mathf.FloorToInt(time / 3600);
+            var minutes = Mathf.FloorToInt(time / 60);
+            var seconds = Mathf.FloorToInt(time % 60);
+            
+            return $"{hours:00}:{minutes:00}:{seconds:00}";
+        }
     }
 }
