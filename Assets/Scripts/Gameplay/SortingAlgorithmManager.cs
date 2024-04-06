@@ -43,6 +43,9 @@ namespace Gameplay
         {
             Events.EventManager.Singleton.GameplayEvents.RetryEvent += OnRetryEvent;
             Events.EventManager.Singleton.GameplayEvents.RequestRetryEvent += OnRequestRetryEvent;
+            
+            Events.EventManager.Singleton.GameplayEvents.RestartEvent += OnRestartEvent;
+            Events.EventManager.Singleton.GameplayEvents.RequestRestartEvent += OnRequestRestartEvent;
 
             Events.EventManager.Singleton.ContainerEvents.UserInteractedWithContainerEvent +=
                 OnUserInteractedWithContainerEvent;
@@ -61,7 +64,7 @@ namespace Gameplay
         public override void OnNetworkSpawn()
         {
             if (_highScores.Value.Length != 0)
-                Events.EventManager.Singleton.GameplayEvents.EmitHighScoresFetchedEvent(_highScores.Value.ToString());
+                SendHighScoresFetchedEventRpc(_highScores.Value.ToString());
             
             if (!IsServer) return;
             
@@ -108,6 +111,24 @@ namespace Gameplay
         {
             Events.EventManager.Singleton.GameplayEvents.EmitRetryEvent();
         }
+        
+        [Rpc(SendTo.Everyone)]
+        private void SendSuccessEventRpc()
+        {
+            Events.EventManager.Singleton.GameplayEvents.EmitSuccessEvent();
+        }
+        
+        [Rpc(SendTo.Server)]
+        private void SendRequestRestartEventRpc()
+        {
+            SendRestartEventRpc();
+        }
+        
+        [Rpc(SendTo.Everyone)]
+        private void SendRestartEventRpc()
+        {
+            Events.EventManager.Singleton.GameplayEvents.EmitRestartEvent();
+        }
 
         [Rpc(SendTo.Everyone)]
         private void SendTimerUpdatedEventRpc(string time)
@@ -123,6 +144,12 @@ namespace Gameplay
             _sessionIds.Add(sessionId);
             
             Debug.Log($"Session ID registered: {sessionId}");
+        }
+        
+        [Rpc(SendTo.Everyone)]
+        private void SendHighScoresFetchedEventRpc(string highScores)
+        {
+            Events.EventManager.Singleton.GameplayEvents.EmitHighScoresFetchedEvent(highScores);
         }
         
         // ====================
@@ -197,6 +224,24 @@ namespace Gameplay
         {
             SendRequestRetryEventRpc();
         }
+
+        private void OnRestartEvent()
+        {
+            if (!IsServer) return;
+            
+            _swapIndex = 0;
+            
+            foreach (var container in containers)
+                container.Reset();
+            
+            _timer.Reset();
+            _timer.Start();
+        }
+
+        private void OnRequestRestartEvent()
+        {
+            SendRequestRestartEventRpc();
+        }
         
         private void OnContainerSpawnedEvent()
         {
@@ -232,15 +277,15 @@ namespace Gameplay
 
             if (_swapIndex >= _swaps.Count)
             {
-                Debug.Log("Algorithm completed");
+                SendSuccessEventRpc();
                 
                 _timer.Stop();
-                
-                Debug.Log($"Time elapsed: {_timer.TimeString}");
 
                 await AlgoQuestServices.Algorithms.Create(algorithm,
                     AlgoQuestServices.Algorithms.AlgorithmCompletionStatus.Success, _timer.TimeElapsedInMs,
                     GetSessionIds());
+                
+                GetHighScores();
 
                 return;
             }
@@ -287,7 +332,7 @@ namespace Gameplay
             
             _highScores.Value = highScoresString;
             
-            Events.EventManager.Singleton.GameplayEvents.EmitHighScoresFetchedEvent(highScoresString);
+            SendHighScoresFetchedEventRpc(highScoresString);
         }
     }
 }

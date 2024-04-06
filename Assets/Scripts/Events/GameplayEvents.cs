@@ -8,6 +8,10 @@ namespace Events
         public event UnityAction RetryEvent;
         public event UnityAction RequestRetryEvent;
         
+        public event UnityAction SuccessEvent;
+        public event UnityAction RestartEvent;
+        public event UnityAction RequestRestartEvent;
+        
         public event UnityAction<string> TimerUpdatedEvent;
         public event UnityAction<string> HighScoresFetchedEvent;
         
@@ -24,6 +28,21 @@ namespace Events
         public void EmitRequestRetryEvent()
         {
             RequestRetryEvent?.Invoke();
+        }
+        
+        public void EmitSuccessEvent()
+        {
+            SuccessEvent?.Invoke();
+        }
+        
+        public void EmitRestartEvent()
+        {
+            RestartEvent?.Invoke();
+        }
+        
+        public void EmitRequestRestartEvent()
+        {
+            RequestRestartEvent?.Invoke();
         }
         
         public void EmitTimerUpdatedEvent(string time)

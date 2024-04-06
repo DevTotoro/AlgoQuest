@@ -12,13 +12,15 @@ namespace Core
         [Header("UI Elements")]
         [SerializeField] private GameObject pauseMenu;
         [SerializeField] private GameObject gameOverMenu;
+        [SerializeField] private GameObject successMenu;
 
         private bool _isPaused;
         private bool _isGameOver;
+        private bool _isSuccess;
         
         public static GameManager Singleton { get; private set; }
         
-        public bool ShouldBeInteractive => !_isPaused && !_isGameOver;
+        public bool ShouldBeInteractive => !_isPaused && !_isGameOver && !_isSuccess;
         
         private void OnEnable()
         {
@@ -37,6 +39,9 @@ namespace Core
             
             Events.EventManager.Singleton.GameplayEvents.GameOverEvent += OnGameOver;
             Events.EventManager.Singleton.GameplayEvents.RetryEvent += OnRetry;
+            
+            Events.EventManager.Singleton.GameplayEvents.SuccessEvent += OnSuccess;
+            Events.EventManager.Singleton.GameplayEvents.RestartEvent += OnRestart;
         }
 
         // Called per joined client
@@ -52,7 +57,7 @@ namespace Core
 
         private void OnPause()
         {
-            if (_isGameOver) return;
+            if (_isGameOver || _isSuccess) return;
             
             _isPaused = !_isPaused;
             
@@ -71,6 +76,20 @@ namespace Core
             _isGameOver = false;
             
             gameOverMenu.SetActive(false);
+        }
+
+        private void OnSuccess()
+        {
+            _isSuccess = true;
+            
+            successMenu.SetActive(true);
+        }
+
+        private void OnRestart()
+        {
+            _isSuccess = false;
+            
+            successMenu.SetActive(false);
         }
     }
 }

@@ -52,6 +52,7 @@ namespace Actors.Player
             EventManager.Singleton.ContainerEvents.ContainerDataUpdatedEvent += OnContainerDataUpdated;
             
             EventManager.Singleton.GameplayEvents.RetryEvent += OnRetry;
+            EventManager.Singleton.GameplayEvents.RestartEvent += OnRestart;
         }
         
         private void OnDisable()
@@ -62,6 +63,7 @@ namespace Actors.Player
             EventManager.Singleton.ContainerEvents.ContainerDataUpdatedEvent -= OnContainerDataUpdated;
             
             EventManager.Singleton.GameplayEvents.RetryEvent -= OnRetry;
+            EventManager.Singleton.GameplayEvents.RestartEvent -= OnRestart;
         }
 
         private void Awake()
@@ -129,6 +131,13 @@ namespace Actors.Player
         }
         
         private void OnRetry()
+        {
+            if (!IsOwner) return;
+            
+            _networkData.Value = new ContainerData { State = initialState, Value = initialValue };
+        }
+
+        private void OnRestart()
         {
             if (!IsOwner) return;
             
