@@ -1,34 +1,29 @@
-using Unity.Services.Relay;
+using Network;
+using SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
-using RelayService = Network.RelayService;
 
 namespace UI.MainMenu
 {
-    public class MultiplayerMenu : MonoBehaviour
+    public class AlgorithmMenu : MonoBehaviour
     {
         [Header("UI Elements")]
-        [SerializeField] private TMPro.TMP_InputField codeInputField;
         [SerializeField] private TMPro.TMP_Text feedbackText;
         [SerializeField] private Button[] buttonsToDisable;
         
-        public async void JoinHost()
+        public async void CreateHost(GameSceneSO scene)
         {
             feedbackText.text = "";
             
-            if (string.IsNullOrEmpty(codeInputField.text))
-            {
-                feedbackText.text = "Please enter a code";
-                return;
-            }
-            
             ToggleButtons(false);
-
+            
             try
             {
-                await RelayService.Singleton.JoinHost(codeInputField.text);
+                await RelayService.Singleton.CreateHost();
+                
+                SceneService.LoadSceneNetwork(scene);
             }
-            catch (RelayServiceException e)
+            catch (Unity.Services.Relay.RelayServiceException e)
             {
                 feedbackText.text = e.Message;
             }

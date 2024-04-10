@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 13ae78f1383c941d5b2c4af9498aa538, type: 3}
-  m_Name: MainScene
+  m_Name: BubbleSortGuided
   m_EditorClassIdentifier: 
-  sceneName: MainScene
+  sceneName: BubbleSortGuided
   buildIndex: 1
