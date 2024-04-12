@@ -26,14 +26,14 @@ namespace Gameplay.SortingAlgorithms
                 {
                     Index = i,
                     TargetValue = values[i],
-                    PossibleValues = new[] { values[i], values[minIndex], 0 }
+                    PossibleValues = new[] { values[i], values[minIndex], -1 }
                 };
                 
                 var containerState2 = new ContainerAlgorithmState
                 {
                     Index = minIndex,
                     TargetValue = values[minIndex],
-                    PossibleValues = new[] { values[i], values[minIndex], 0 }
+                    PossibleValues = new[] { values[i], values[minIndex], -1 }
                 };
                 
                 containerStates.Add((containerState1, containerState2));

@@ -1,8 +1,8 @@
 namespace Interfaces
 {
-    public interface IInteractive<in T>
+    public interface IInteractive
     {
-        public void Interact(T data = default);
+        public void Interact(int value);
         
         public void Highlight(bool highlight);
     }

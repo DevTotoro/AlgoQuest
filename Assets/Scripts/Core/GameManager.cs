@@ -38,9 +38,7 @@ namespace Core
             Events.EventManager.Singleton.InputEvents.PauseEvent += OnPause;
             
             Events.EventManager.Singleton.GameplayEvents.GameOverEvent += OnGameOver;
-            Events.EventManager.Singleton.GameplayEvents.RetryEvent += OnRetry;
-            
-            Events.EventManager.Singleton.GameplayEvents.SuccessEvent += OnSuccess;
+            Events.EventManager.Singleton.GameplayEvents.GameWonEvent += OnGameWon;
             Events.EventManager.Singleton.GameplayEvents.RestartEvent += OnRestart;
         }
 
@@ -69,26 +67,25 @@ namespace Core
             _isGameOver = true;
             
             gameOverMenu.SetActive(true);
+            
+            Events.EventManager.Singleton.PlayerEvents.EmitMoveEvent(false);
         }
         
-        private void OnRetry()
-        {
-            _isGameOver = false;
-            
-            gameOverMenu.SetActive(false);
-        }
-
-        private void OnSuccess()
+        private void OnGameWon()
         {
             _isSuccess = true;
             
             successMenu.SetActive(true);
+            
+            Events.EventManager.Singleton.PlayerEvents.EmitMoveEvent(false);
         }
 
         private void OnRestart()
         {
+            _isGameOver = false;
             _isSuccess = false;
             
+            gameOverMenu.SetActive(false);
             successMenu.SetActive(false);
         }
     }

@@ -4,40 +4,26 @@ namespace Events
 {
     public class GameplayEvents
     {
+        public event UnityAction<ulong, int> SetPlayerContainerValueEvent;
+        
         public event UnityAction GameOverEvent;
-        public event UnityAction RetryEvent;
-        public event UnityAction RequestRetryEvent;
-        
-        public event UnityAction SuccessEvent;
-        public event UnityAction RestartEvent;
+        public event UnityAction GameWonEvent;
         public event UnityAction RequestRestartEvent;
+        public event UnityAction RestartEvent;
         
-        public event UnityAction<string> TimerUpdatedEvent;
-        public event UnityAction<string> HighScoresFetchedEvent;
+        public void EmitSetPlayerContainerValueEvent(ulong clientId, int value)
+        {
+            SetPlayerContainerValueEvent?.Invoke(clientId, value);
+        }
         
         public void EmitGameOverEvent()
         {
             GameOverEvent?.Invoke();
         }
         
-        public void EmitRetryEvent()
+        public void EmitGameWonEvent()
         {
-            RetryEvent?.Invoke();
-        }
-        
-        public void EmitRequestRetryEvent()
-        {
-            RequestRetryEvent?.Invoke();
-        }
-        
-        public void EmitSuccessEvent()
-        {
-            SuccessEvent?.Invoke();
-        }
-        
-        public void EmitRestartEvent()
-        {
-            RestartEvent?.Invoke();
+            GameWonEvent?.Invoke();
         }
         
         public void EmitRequestRestartEvent()
@@ -45,14 +31,9 @@ namespace Events
             RequestRestartEvent?.Invoke();
         }
         
-        public void EmitTimerUpdatedEvent(string time)
+        public void EmitRestartEvent()
         {
-            TimerUpdatedEvent?.Invoke(time);
-        }
-        
-        public void EmitHighScoresFetchedEvent(string highScores)
-        {
-            HighScoresFetchedEvent?.Invoke(highScores);
+            RestartEvent?.Invoke();
         }
     }
 }

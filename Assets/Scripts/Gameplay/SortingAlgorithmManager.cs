@@ -1,11 +1,10 @@
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 using Unity.Netcode;
-using Actors.Containers;
-using Gameplay.SortingAlgorithms;
 using Unity.Collections;
+using Gameplay.SortingAlgorithms;
 
 namespace Gameplay
 {
@@ -15,324 +14,294 @@ namespace Gameplay
         SelectionSort
     }
 
-    public struct ContainerAlgorithmState
-    {
-        public int Index { get; set; }
-        public int TargetValue { get; set; }
-        public int[] PossibleValues { get; set; }
-    }
-    
-    public class SortingAlgorithmManager : NetworkBehaviour
-    {
-        [Header("Algorithm")]
-        [SerializeField] private SortingAlgorithm algorithm;
-        
-        [Header("References")]
-        [SerializeField] private ContainerController[] containers;
-        
-        private IList<(ContainerAlgorithmState, ContainerAlgorithmState)> _swaps;
-        private int _swapIndex;
-        private bool _firstContainerSwapSuccess;
+    public enum SortingAlgorithmMode
+     {
+         Guided,
+         TimeTrial
+     }
+     
+     public struct ContainerAlgorithmState
+     {
+         public int Index { get; set; }
+         public int TargetValue { get; set; }
+         public int[] PossibleValues { get; set; }
+     }
+     
+     [RequireComponent(typeof(ContainerManager))]
+     public class SortingAlgorithmManager : NetworkBehaviour
+     {
+         [Header("Algorithm")]
+         [SerializeField] private SortingAlgorithm algorithm;
+         [SerializeField] private SortingAlgorithmMode mode;
+         
+         private IList<(ContainerAlgorithmState, ContainerAlgorithmState)> _swaps;
+         private int _swapIndex;
+         private bool _firstContainerSwapSuccess, _shouldReceiveContainerValueChanged;
 
-        private readonly Core.Timer _timer = new();
-        
-        private readonly NetworkList<FixedString64Bytes> _sessionIds = new();
-        private readonly NetworkVariable<FixedString4096Bytes> _highScores = new();
+         private readonly Core.Timer _timer = new();
+         
+         private readonly NetworkVariable<FixedString4096Bytes> _highScores = new();
+         
+         private ContainerManager _containerManager;
 
-        private void Awake()
-        {
-            Events.EventManager.Singleton.GameplayEvents.RetryEvent += OnRetryEvent;
-            Events.EventManager.Singleton.GameplayEvents.RequestRetryEvent += OnRequestRetryEvent;
-            
-            Events.EventManager.Singleton.GameplayEvents.RestartEvent += OnRestartEvent;
-            Events.EventManager.Singleton.GameplayEvents.RequestRestartEvent += OnRequestRestartEvent;
+         private void Awake()
+         {
+             Events.EventManager.Singleton.GameplayEvents.RequestRestartEvent += RequestRestartRpc;
+             
+             _containerManager = GetComponent<ContainerManager>();
+         }
 
-            Events.EventManager.Singleton.ContainerEvents.UserInteractedWithContainerEvent +=
-                OnUserInteractedWithContainerEvent;
-        }
+         private void Update()
+         {
+             if (!IsServer) return;
 
-        private void Update()
-        {
-            if (!IsServer) return;
+             if (_timer.Run())
+                 SendTimerUpdatedEventRpc(_timer.TimeString);
+         }
 
-            if (_timer.Run())
-                SendTimerUpdatedEventRpc(_timer.TimeString);
-        }
-        
-        // ====================
-        
-        public override void OnNetworkSpawn()
-        {
-            if (_highScores.Value.Length != 0)
-                SendHighScoresFetchedEventRpc(_highScores.Value.ToString());
-            
-            if (!IsServer) return;
-            
-            GetHighScores();
-            
-            if (CheckContainersSpawned())
-                InitializeRpc();
-            else
-                Events.EventManager.Singleton.ContainerEvents.ContainerSpawnedEvent += OnContainerSpawnedEvent;
-        }
-        
-        [Rpc(SendTo.Server)]
-        private void InitializeRpc()
-        {
-            var values = new int[containers.Length];
-            for (var i = 0; i < containers.Length; i++)
-            {
-                values[i] = containers[i].Data.Value;
-                
-                containers[i].AlgorithmIndex = i;
-                containers[i].ContainerDataChangedEvent += OnContainerValueChanged;
-            }
+         // ====================
+         
+         public override void OnNetworkSpawn()
+         {
+             if (mode == SortingAlgorithmMode.TimeTrial)
+             {
+                 Events.EventManager.Singleton.UIEvents.EmitToggleLeaderboardEvent(true);
+                 Events.EventManager.Singleton.UIEvents.EmitToggleTimerEvent(true);
+                 
+                 if (_highScores.Value.Length != 0)
+                     SendHighScoresFetchedEventRpc(_highScores.Value.ToString());
+             }
+             
+             if (!IsServer) return;
+             
+             if (mode == SortingAlgorithmMode.TimeTrial)
+                 GetHighScores();
+             
+             _containerManager.OnContainerValueChanged += OnContainerValueChanged;
+             
+             Initialize();
+         }
+         
+         [Rpc(SendTo.Everyone)]
+         private void SendTimerUpdatedEventRpc(string time)
+         {
+             Events.EventManager.Singleton.UIEvents.EmitSetTimerEvent(time);
+         }
+         
+         [Rpc(SendTo.Everyone)]
+         private void SendHighScoresFetchedEventRpc(string highScores)
+         {
+             Events.EventManager.Singleton.UIEvents.EmitSetLeaderboardEvent(highScores);
+         }
+         
+         [Rpc(SendTo.Everyone)]
+         private void GameOverRpc()
+         {
+             Events.EventManager.Singleton.GameplayEvents.EmitGameOverEvent();
+         }
+         
+         [Rpc(SendTo.Everyone)]
+         private void GameWonRpc()
+         {
+             Events.EventManager.Singleton.GameplayEvents.EmitGameWonEvent();
+         }
 
-            _swaps = RunAlgorithm(values);
-            _swapIndex = 0;
-            
-            _timer.Start();
-        }
-        
-        [Rpc(SendTo.Everyone)]
-        private void SendGameOverEventRpc()
-        {
-            Events.EventManager.Singleton.GameplayEvents.EmitGameOverEvent();
-        }
-        
-        [Rpc(SendTo.Server)]
-        private void SendRequestRetryEventRpc()
-        {
-            SendRetryEventRpc();
-        }
-        
-        [Rpc(SendTo.Everyone)]
-        private void SendRetryEventRpc()
-        {
-            Events.EventManager.Singleton.GameplayEvents.EmitRetryEvent();
-        }
-        
-        [Rpc(SendTo.Everyone)]
-        private void SendSuccessEventRpc()
-        {
-            Events.EventManager.Singleton.GameplayEvents.EmitSuccessEvent();
-        }
-        
-        [Rpc(SendTo.Server)]
-        private void SendRequestRestartEventRpc()
-        {
-            SendRestartEventRpc();
-        }
-        
-        [Rpc(SendTo.Everyone)]
-        private void SendRestartEventRpc()
-        {
-            Events.EventManager.Singleton.GameplayEvents.EmitRestartEvent();
-        }
+         [Rpc(SendTo.Server)]
+         private void RequestRestartRpc()
+         {
+             Restart();
+             
+             RestartRpc();
+         }
+         
+         [Rpc(SendTo.Everyone)]
+         private void RestartRpc()
+         {
+             Events.EventManager.Singleton.GameplayEvents.EmitRestartEvent();
+         }
+         
+         // ====================
+         
+         private async void OnContainerValueChanged(int containerIndex, int value)
+         {
+             if (!IsServer || !_shouldReceiveContainerValueChanged) return;
+             
+             var (container1State, container2State) = _swaps[_swapIndex];
 
-        [Rpc(SendTo.Everyone)]
-        private void SendTimerUpdatedEventRpc(string time)
-        {
-            Events.EventManager.Singleton.GameplayEvents.EmitTimerUpdatedEvent(time);
-        }
+             if (mode == SortingAlgorithmMode.TimeTrial && containerIndex != container1State.Index &&
+                 containerIndex != container2State.Index)
+             {
+                 GameOverRpc();
+                 
+                 _timer.Stop();
 
-        [Rpc(SendTo.Server)]
-        private void RegisterSessionIdRpc(string sessionId)
-        {
-            if (_sessionIds.Contains(sessionId)) return;
-            
-            _sessionIds.Add(sessionId);
-            
-            Debug.Log($"Session ID registered: {sessionId}");
-        }
-        
-        [Rpc(SendTo.Everyone)]
-        private void SendHighScoresFetchedEventRpc(string highScores)
-        {
-            Events.EventManager.Singleton.GameplayEvents.EmitHighScoresFetchedEvent(highScores);
-        }
-        
-        // ====================
-        
-        private async void OnContainerValueChanged(int containerIndex, int value)
-        {
-            if (!IsServer) return;
-            
-            var (container1State, container2State) = _swaps[_swapIndex];
-            
-            if (containerIndex != container1State.Index && containerIndex != container2State.Index)
-            {
-                SendGameOverEventRpc();
-                
-                _timer.Stop();
+                 await AlgoQuestServices.Algorithms.Create(algorithm,
+                     AlgoQuestServices.Algorithms.AlgorithmCompletionStatus.Failure, _timer.TimeElapsedInMs,
+                     _containerManager.GetSessionIds());
+                 
+                 return;
+             }
 
-                await AlgoQuestServices.Algorithms.Create(algorithm,
-                    AlgoQuestServices.Algorithms.AlgorithmCompletionStatus.Failure, _timer.TimeElapsedInMs,
-                    GetSessionIds());
-                
-                return;
-            }
+             var targetValue = containerIndex == container1State.Index
+                 ? container1State.TargetValue
+                 : container2State.TargetValue;
 
-            var targetValue = containerIndex == container1State.Index
-                ? container1State.TargetValue
-                : container2State.TargetValue;
+             if (value == targetValue)
+             {
+                 if (_firstContainerSwapSuccess)
+                     await NextSwap();
+                 else
+                     _firstContainerSwapSuccess = true;
 
-            if (value == targetValue)
-            {
-                if (_firstContainerSwapSuccess)
-                    await NextSwap();
-                else
-                    _firstContainerSwapSuccess = true;
+                 return;
+             }
+             
+             var possibleValues = containerIndex == container1State.Index
+                 ? container1State.PossibleValues
+                 : container2State.PossibleValues;
+             
+             if (mode == SortingAlgorithmMode.TimeTrial && !possibleValues.Contains(value))
+             {
+                 GameOverRpc();
+                 
+                 _timer.Stop();
 
-                return;
-            }
-            
-            var possibleValues = containerIndex == container1State.Index
-                ? container1State.PossibleValues
-                : container2State.PossibleValues;
-            
-            if (!possibleValues.Contains(value))
-            {
-                SendGameOverEventRpc();
-                
-                _timer.Stop();
+                 await AlgoQuestServices.Algorithms.Create(algorithm,
+                     AlgoQuestServices.Algorithms.AlgorithmCompletionStatus.Failure, _timer.TimeElapsedInMs,
+                     _containerManager.GetSessionIds());
+                 
+                 return;
+             }
+             
+             _firstContainerSwapSuccess = false;
+         }
+         
+         // ====================
+         
+         private void Initialize()
+         {
+             _shouldReceiveContainerValueChanged = false;
+             
+             var values = _containerManager.GetContainerValues();
+             
+             _swaps = RunAlgorithm(values);
 
-                await AlgoQuestServices.Algorithms.Create(algorithm,
-                    AlgoQuestServices.Algorithms.AlgorithmCompletionStatus.Failure, _timer.TimeElapsedInMs,
-                    GetSessionIds());
-                
-                return;
-            }
-            
-            _firstContainerSwapSuccess = false;
-        }
+             switch (mode)
+             {
+                 case SortingAlgorithmMode.Guided:
+                     UnlockCurrentContainers();
+                     break;
+                 
+                 case SortingAlgorithmMode.TimeTrial:
+                     _containerManager.SetAllContainersLockState(false);
 
-        private void OnRetryEvent()
-        {
-            if (!IsServer) return;
-            
-            _swapIndex = 0;
-            
-            foreach (var container in containers)
-                container.Reset();
-            
-            _timer.Reset();
-            _timer.Start();
-        }
-        
-        private void OnRequestRetryEvent()
-        {
-            SendRequestRetryEventRpc();
-        }
+                     _timer.Start();
+                     
+                     break;
+                 
+                 default:
+                     Debug.LogError("Invalid sorting algorithm mode");
+                     return;
+             }
+             
+             _shouldReceiveContainerValueChanged = true;
+         }
+         
+         private IList<(ContainerAlgorithmState, ContainerAlgorithmState)> RunAlgorithm(IList<int> values)
+         {
+             return algorithm switch
+             {
+                 SortingAlgorithm.BubbleSort => BubbleSort.Run(values),
+                 SortingAlgorithm.SelectionSort => SelectionSort.Run(values),
+                 _ => new List<(ContainerAlgorithmState, ContainerAlgorithmState)>()
+             };
+         }
+         
+         private async Task NextSwap()
+         {
+             _shouldReceiveContainerValueChanged = false;
+             
+             _swapIndex++;
+             
+             if (mode == SortingAlgorithmMode.Guided)
+                 UnlockCurrentContainers();
+         
+             if (_swapIndex >= _swaps.Count)
+             {
+                 GameWonRpc();
+                 
+                 if (mode != SortingAlgorithmMode.TimeTrial) return;
 
-        private void OnRestartEvent()
-        {
-            if (!IsServer) return;
-            
-            _swapIndex = 0;
-            
-            foreach (var container in containers)
-                container.Reset();
-            
-            _timer.Reset();
-            _timer.Start();
-        }
+                 _timer.Stop();
+                 
+                 await AlgoQuestServices.Algorithms.Create(algorithm,
+                     AlgoQuestServices.Algorithms.AlgorithmCompletionStatus.Success, _timer.TimeElapsedInMs,
+                     _containerManager.GetSessionIds());
+             
+                 GetHighScores();
+                 
+                 return;
+             }
+             
+             _firstContainerSwapSuccess = false;
+             
+             _shouldReceiveContainerValueChanged = true;
+         }
 
-        private void OnRequestRestartEvent()
-        {
-            SendRequestRestartEventRpc();
-        }
-        
-        private void OnContainerSpawnedEvent()
-        {
-            if (!IsServer) return;
-            
-            if (!CheckContainersSpawned()) return;
-            
-            Events.EventManager.Singleton.ContainerEvents.ContainerSpawnedEvent -= OnContainerSpawnedEvent;
-            
-            InitializeRpc();
-        }
-        
-        private void OnUserInteractedWithContainerEvent(string sessionId)
-        {
-            RegisterSessionIdRpc(sessionId);
-        }
-        
-        // ====================
+         private void UnlockCurrentContainers()
+         {
+             if (_swapIndex >= _swaps.Count) return;
+             
+             var (container1State, container2State) = _swaps[_swapIndex];
+             
+             _containerManager.SetContainerLockState(container1State.Index, false);
+             _containerManager.SetContainerLockState(container2State.Index, false);
 
-        private IList<(ContainerAlgorithmState, ContainerAlgorithmState)> RunAlgorithm(IList<int> values)
-        {
-            return algorithm switch
-            {
-                SortingAlgorithm.BubbleSort => BubbleSort.Run(values),
-                SortingAlgorithm.SelectionSort => SelectionSort.Run(values),
-                _ => new List<(ContainerAlgorithmState, ContainerAlgorithmState)>()
-            };
-        }
+             _containerManager.SetAllContainersLockState(true, new[] { container1State.Index, container2State.Index });
+         }
+         
+         private void Restart()
+         {
+             if (!IsServer) return;
+             
+             _shouldReceiveContainerValueChanged = false;
+             
+             _swapIndex = 0;
+             
+             _containerManager.ResetContainers();
+             
+             _timer.Reset();
+             
+             Initialize();
+             
+             _shouldReceiveContainerValueChanged = true;
+         }
+         
+         private async void GetHighScores()
+         {
+             var res = await AlgoQuestServices.Algorithms.GetHighScores(algorithm);
+             
+             if (!res.Success)
+             {
+                 Debug.LogError("Failed to get high scores");
+                 return;
+             }
+             
+             var highScores = res.Data;
+             
+             var highScoresString = "";
+             
+             foreach (var highScore in highScores)
+             {
+                 var time = Core.Timer.GetTimeString(highScore.time);
 
-        private async Task NextSwap()
-        {
-            _swapIndex++;
-
-            if (_swapIndex >= _swaps.Count)
-            {
-                SendSuccessEventRpc();
-                
-                _timer.Stop();
-
-                await AlgoQuestServices.Algorithms.Create(algorithm,
-                    AlgoQuestServices.Algorithms.AlgorithmCompletionStatus.Success, _timer.TimeElapsedInMs,
-                    GetSessionIds());
-                
-                GetHighScores();
-
-                return;
-            }
-            
-            _firstContainerSwapSuccess = false;
-        }
-        
-        private bool CheckContainersSpawned()
-        {
-            return containers.All(container => container.IsSpawned);
-        }
-        
-        private string[] GetSessionIds()
-        {
-            var sessionIds = new string[_sessionIds.Count];
-            
-            for (var i = 0; i < _sessionIds.Count; i++)
-                sessionIds[i] = _sessionIds[i].ToString();
-            
-            return sessionIds;
-        }
-        
-        private async void GetHighScores()
-        {
-            var res = await AlgoQuestServices.Algorithms.GetHighScores(algorithm);
-            
-            if (!res.Success)
-            {
-                Debug.LogError("Failed to get high scores");
-                return;
-            }
-            
-            var highScores = res.Data;
-            
-            var highScoresString = "";
-            
-            foreach (var highScore in highScores)
-            {
-                var time = Core.Timer.GetTimeString(highScore.time);
-
-                highScoresString +=
-                    $"- {time} | {string.Join(", ", highScore.sessions.Select(session => session.username))}\n";
-            }
-            
-            _highScores.Value = highScoresString;
-            
-            SendHighScoresFetchedEventRpc(highScoresString);
-        }
-    }
+                 highScoresString +=
+                     $"- {time} | {string.Join(", ", highScore.sessions.Select(session => session.username))}\n";
+             }
+             
+             _highScores.Value = highScoresString;
+             
+             SendHighScoresFetchedEventRpc(highScoresString);
+         }
+     }
 }

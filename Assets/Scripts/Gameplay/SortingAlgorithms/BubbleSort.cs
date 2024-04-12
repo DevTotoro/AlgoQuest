@@ -20,14 +20,14 @@ namespace Gameplay.SortingAlgorithms
                     {
                         Index = j,
                         TargetValue = values[j],
-                        PossibleValues = new[] { values[j], values[j + 1], 0 }
+                        PossibleValues = new[] { values[j], values[j + 1], -1 }
                     };
                     
                     var containerState2 = new ContainerAlgorithmState
                     {
                         Index = j + 1,
                         TargetValue = values[j + 1],
-                        PossibleValues = new[] { values[j], values[j + 1], 0 }
+                        PossibleValues = new[] { values[j], values[j + 1], -1 }
                     };
                     
                     containerStates.Add((containerState1, containerState2));

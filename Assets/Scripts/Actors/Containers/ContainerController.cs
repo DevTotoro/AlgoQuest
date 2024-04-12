@@ -1,163 +1,60 @@
-using AlgoQuestServices;
+using System;
 using UnityEngine;
-using Unity.Netcode;
 using UnityEngine.Events;
+using Unity.Netcode;
 
 namespace Actors.Containers
 {
-    public enum ContainerState
+    public struct ContainerData : INetworkSerializable, IEquatable<ContainerData>
     {
-        Empty,
-        Full,
-        Locked
-    }
-    
-    public struct ContainerData : INetworkSerializable
-    {
-        public ContainerState State;
         public int Value;
-        
+        public bool IsLocked;
+
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
-            serializer.SerializeValue(ref State);
+            serializer.SerializeValue(ref IsLocked);
             serializer.SerializeValue(ref Value);
+        }
+
+        public bool Equals(ContainerData other)
+        {
+            return Value == other.Value && IsLocked == other.IsLocked;
         }
     }
     
     [RequireComponent(typeof(Collider))]
-    public class ContainerController : NetworkBehaviour, Interfaces.IInteractive<ContainerData>
+    public class ContainerController : MonoBehaviour, Interfaces.IInteractive
     {
-        [Header("Data")]
-        [SerializeField] private ContainerState initialState = ContainerState.Locked;
-        [SerializeField] private int initialValue;
-        
         [Header("References")]
-        [SerializeField] private GameObject emptyContainer;
-        [SerializeField] private GameObject fullContainer;
         [SerializeField] private GameObject lockedContainer;
+        [SerializeField] private GameObject unlockedContainer;
         [SerializeField] private GameObject highlightContainer;
         [Space]
         [SerializeField] private TMPro.TextMeshProUGUI valueText;
         
-        private readonly NetworkVariable<ContainerData> _networkData = new();
+        public int Index { private get; set; }
         
-        public ContainerData Data => _networkData.Value;
-        public int AlgorithmIndex { get; set; } = -1;
-        
-        public event UnityAction<int, int> ContainerDataChangedEvent;
+        public event UnityAction<int, int, string> OnInteract;
 
-        private void Awake()
+        public void Interact(int value)
         {
-            _networkData.OnValueChanged += OnDataChanged;
-        }
-        
-        // ====================
-        
-        public override void OnNetworkSpawn()
-        {
-            if (IsServer)
-            {
-                _networkData.Value = new ContainerData { State = initialState, Value = initialValue };
-                
-                Events.EventManager.Singleton.ContainerEvents.EmitContainerSpawnedEvent();
-            }
-            
-            UpdateVisuals();
-        }
-        
-        [Rpc(SendTo.Server)]
-        private void SetDataRpc(ContainerData data, bool reset = false, RpcParams rpcParams = default)
-        {
-            SendContainerDataUpdatedEventRpc(rpcParams.Receive.SenderClientId, _networkData.Value);
-
-            if (!reset && AlgorithmIndex != -1) ContainerDataChangedEvent?.Invoke(AlgorithmIndex, data.Value);
-            
-            _networkData.Value = data;
-        }
-        
-        [Rpc(SendTo.Everyone)]
-        private void SendContainerDataUpdatedEventRpc(ulong senderClientId, ContainerData data)
-        {
-            Events.EventManager.Singleton.ContainerEvents.EmitContainerDataUpdatedEvent(senderClientId, data);
-        }
-        
-        // ====================
-        
-        public void Interact(ContainerData data)
-        {
-            if (_networkData.Value.State == ContainerState.Locked || data.State == ContainerState.Locked) return;
-            
-            ContainerData newData;
-
-            switch (_networkData.Value.State)
-            {
-                case ContainerState.Empty: // Container empty
-                    if (data.State == ContainerState.Empty) return;
-                    
-                    newData = new ContainerData { State = ContainerState.Full, Value = data.Value };
-                    break;
-                
-                case ContainerState.Full: // Container full
-                    switch (data.State)
-                    {
-                        case ContainerState.Empty: // Data empty
-                            newData = new ContainerData { State = ContainerState.Empty, Value = 0 };
-                            break;
-                        
-                        case ContainerState.Full: // Data full
-                            newData = new ContainerData { State = ContainerState.Full, Value = data.Value };
-                            break;
-                        
-                        case ContainerState.Locked: // Data locked
-                        default:
-                            return;
-                    }
-                    break;
-                
-                case ContainerState.Locked: // Container locked
-                default:
-                    return;
-            }
-            
-            SetDataRpc(newData);
-            
-            Events.EventManager.Singleton.ContainerEvents.EmitUserInteractedWithContainerEvent(Http.SessionId);
+            OnInteract?.Invoke(Index, value, AlgoQuestServices.Http.SessionId);
         }
         
         public void Highlight(bool highlight)
         {
             highlightContainer.SetActive(highlight);
         }
-
-        public void Reset()
+        
+        public void ToggleLock(bool isLocked)
         {
-            if (_networkData.Value.State == ContainerState.Locked) return;
-            
-            SetDataRpc(new ContainerData { State = initialState, Value = initialValue }, true);
+            lockedContainer.SetActive(isLocked);
+            unlockedContainer.SetActive(!isLocked);
         }
-        
-        // ====================
-        
-        private void OnDataChanged(ContainerData previousData, ContainerData newData)
-        {
-            UpdateVisuals();
-        }
-        
-        // ====================
-        
-        private void UpdateVisuals()
-        {
-            emptyContainer.SetActive(_networkData.Value.State == ContainerState.Empty);
-            fullContainer.SetActive(_networkData.Value.State == ContainerState.Full);
-            lockedContainer.SetActive(_networkData.Value.State == ContainerState.Locked);
 
-            if (_networkData.Value.State == ContainerState.Locked)
-            {
-                valueText.text = "locked";
-                return;
-            }
-            
-            valueText.text = _networkData.Value.Value.ToString();
+        public void SetText(string text)
+        {
+            valueText.text = text;
         }
     }
 }

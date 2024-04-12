@@ -29,9 +29,9 @@ namespace Actors.Player
         
         private void SetIsMovingAnimation(bool moving)
         {
-            if (!IsOwner || !Core.GameManager.Singleton.ShouldBeInteractive) return;
+            if (!IsOwner) return;
             
-            _animator.SetBool(isMoving, moving);
+            _animator.SetBool(isMoving, Core.GameManager.Singleton.ShouldBeInteractive && moving);
         }
     }
 }

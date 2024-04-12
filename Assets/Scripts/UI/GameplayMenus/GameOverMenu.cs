@@ -1,8 +1,8 @@
 using UnityEngine;
 
-namespace Ui.SuccessMenu
+namespace Ui.GameplayMenus
 {
-    public class SuccessMenu : MonoBehaviour
+    public class GameOverMenu : MonoBehaviour
     {
         public void Restart()
         {
