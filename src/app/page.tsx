@@ -1,3 +1,10 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'AlgoQuest Services',
+  description: 'A collection of services for the AlgoQuest project',
+};
+
 const HomePage = () => {
   return (
     <div className='flex h-screen flex-col items-center justify-center space-y-4'>

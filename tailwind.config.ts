@@ -7,7 +7,11 @@ const config: Config = {
     extend: {},
   },
 
-  plugins: [],
+  plugins: [require('daisyui')],
+
+  daisyui: {
+    themes: ['business'],
+  },
 };
 
 export default config;
