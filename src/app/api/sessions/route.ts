@@ -6,7 +6,11 @@ import { createSessionSchema } from '~/lib/schemas/sessions.schema';
 
 const GET = async () => {
   try {
-    const data = await db.session.findMany();
+    const data = await db.session.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
 
     return NextResponse.json(data);
   } catch (error) {
