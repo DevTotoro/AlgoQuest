@@ -15,3 +15,7 @@ export const getAlgorithmDisplayName = (algorithm: AlgorithmType) => {
       assertUnreachable(algorithm);
   }
 };
+
+export const copyToClipboard = async (text: string) => {
+  await navigator.clipboard.writeText(text);
+};
