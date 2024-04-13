@@ -27,6 +27,9 @@ namespace Gameplay
         private readonly NetworkList<FixedString64Bytes> _sessionIds = new();
         
         public UnityAction<int, int> OnContainerValueChanged;
+        public UnityAction<int> OnContainersSpawned;
+        
+        public int ContainerCount => _containerData.Count;
 
         private void Awake()
         {
@@ -130,6 +133,9 @@ namespace Gameplay
             UpdateContainerVisuals(networkListEvent.Index, networkListEvent.Value);
             
             OnContainerValueChanged?.Invoke(networkListEvent.Index, networkListEvent.Value.Value);
+            
+            if (IsServer && networkListEvent.Index == _containerData.Count - 1)
+                OnContainersSpawned?.Invoke(_containerData.Count);
         }
         
         // ====================

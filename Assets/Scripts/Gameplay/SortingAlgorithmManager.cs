@@ -74,10 +74,10 @@ namespace Gameplay
              
              if (!IsServer) return;
              
-             if (mode == SortingAlgorithmMode.TimeTrial)
-                 GetHighScores();
-             
              _containerManager.OnContainerValueChanged += OnContainerValueChanged;
+             
+             if (mode == SortingAlgorithmMode.TimeTrial)
+                _containerManager.OnContainersSpawned += GetHighScores;
              
              Initialize();
          }
@@ -134,10 +134,6 @@ namespace Gameplay
                  GameOverRpc();
                  
                  _timer.Stop();
-
-                 await AlgoQuestServices.Algorithms.Create(algorithm,
-                     AlgoQuestServices.Algorithms.AlgorithmCompletionStatus.Failure, _timer.TimeElapsedInMs,
-                     _containerManager.GetSessionIds());
                  
                  return;
              }
@@ -165,10 +161,6 @@ namespace Gameplay
                  GameOverRpc();
                  
                  _timer.Stop();
-
-                 await AlgoQuestServices.Algorithms.Create(algorithm,
-                     AlgoQuestServices.Algorithms.AlgorithmCompletionStatus.Failure, _timer.TimeElapsedInMs,
-                     _containerManager.GetSessionIds());
                  
                  return;
              }
@@ -234,11 +226,17 @@ namespace Gameplay
 
                  _timer.Stop();
                  
-                 await AlgoQuestServices.Algorithms.Create(algorithm,
-                     AlgoQuestServices.Algorithms.AlgorithmCompletionStatus.Success, _timer.TimeElapsedInMs,
-                     _containerManager.GetSessionIds());
+                 var data = new AlgoQuestServices.TimeTrials.CreateTimeTrialPayload
+                 {
+                     type = algorithm,
+                     time = _timer.TimeElapsedInMs,
+                     numberOfValues = _containerManager.ContainerCount,
+                     requiredMoves = _swaps.Count,
+                     sessions = _containerManager.GetSessionIds()
+                 };
+                 await AlgoQuestServices.TimeTrials.Create(data);
              
-                 GetHighScores();
+                 GetHighScores(_containerManager.ContainerCount);
                  
                  return;
              }
@@ -277,9 +275,16 @@ namespace Gameplay
              _shouldReceiveContainerValueChanged = true;
          }
          
-         private async void GetHighScores()
+         private async void GetHighScores(int numberOfValues)
          {
-             var res = await AlgoQuestServices.Algorithms.GetHighScores(algorithm);
+             var queryParams = new AlgoQuestServices.TimeTrials.GetTimeTrialsQueryParams
+             {
+                 type = algorithm,
+                 numberOfValues = numberOfValues,
+                 requiredMoves = _swaps.Count,
+             };
+
+             var res = await AlgoQuestServices.TimeTrials.Get(queryParams);
              
              if (!res.Success)
              {
