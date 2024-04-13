@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Schema, ZodIssue } from 'zod';
 
 export enum HttpCode {
+  OK = 200,
   CREATED = 201,
 
   BAD_REQUEST = 400,
@@ -12,6 +13,7 @@ export enum HttpCode {
 }
 
 const responseMessages: { [key in HttpCode]: string } = {
+  [HttpCode.OK]: 'OK',
   [HttpCode.CREATED]: 'Created',
 
   [HttpCode.BAD_REQUEST]: 'Bad Request',

@@ -23,13 +23,14 @@ model Session {
 }
 
 model Algorithm {
-  id            String        @id @default(uuid())
-  type          AlgorithmType
-  randomValues  Boolean       @map("random_values")
-  initialValues Int[]         @map("initial_values")
+  id             String        @id @default(uuid())
+  type           AlgorithmType
+  numberOfValues Int           @map("number_of_values")
+  minValue       Int           @map("min_value")
+  maxValue       Int           @map("max_value")
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   @@map("algorithms")
 }
