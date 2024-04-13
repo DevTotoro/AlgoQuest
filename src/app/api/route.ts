@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-const handler = () => {
+const GET = () => {
   return NextResponse.json({ status: 'ok' });
 };
 
-export { handler as GET };
+export { GET };

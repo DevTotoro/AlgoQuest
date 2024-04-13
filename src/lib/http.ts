@@ -36,8 +36,8 @@ export const validateBody = <T>(body: unknown, schema: Schema<T>): T | NextRespo
   return result.data;
 };
 
-export const validateParams = <T>(params: unknown, schema: Schema<T>): T | NextResponse => {
-  const result = schema.safeParse(params);
+export const validateParams = <T>(params: URLSearchParams, schema: Schema<T>): T | NextResponse => {
+  const result = schema.safeParse(Object.fromEntries(Array.from(params.entries())));
 
   if (!result.success) {
     return httpResponse(HttpCode.BAD_REQUEST, undefined, result.error.errors);
