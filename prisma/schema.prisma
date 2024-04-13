@@ -19,6 +19,8 @@ model Session {
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
+  timeTrials TimeTrial[]
+
   @@map("sessions")
 }
 
@@ -33,6 +35,20 @@ model Algorithm {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   @@map("algorithms")
+}
+
+model TimeTrial {
+  id             String        @id @default(uuid())
+  type           AlgorithmType
+  time           Int
+  numberOfValues Int           @map("number_of_values")
+  requiredMoves  Int           @map("required_moves")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  sessions Session[]
+
+  @@map("time_trials")
 }
 
 enum AlgorithmType {
