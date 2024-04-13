@@ -5,7 +5,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     <div className='flex h-screen flex-col items-center'>
       <AdminHeader />
 
-      <div className='flex flex-1'>{children}</div>
+      <div className='flex w-full max-w-3xl flex-1 p-4'>{children}</div>
     </div>
   );
 };

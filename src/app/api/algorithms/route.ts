@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '~/lib/db';
-import { HttpCode, httpResponse } from '~/lib/http';
+import { HttpCode, httpResponse, validateBody } from '~/lib/http';
+import { createAlgorithmSchema } from '~/lib/schemas/algorithms.schema';
 
 const GET = async () => {
   try {
@@ -12,6 +13,25 @@ const GET = async () => {
     });
 
     return NextResponse.json(data);
+  } catch (error) {
+    return httpResponse(HttpCode.INTERNAL_SERVER_ERROR);
+  }
+};
+
+const POST = async (request: NextRequest) => {
+  const body: unknown = await request.json();
+  const data = validateBody(body, createAlgorithmSchema);
+
+  if (data instanceof NextResponse) {
+    return data;
+  }
+
+  try {
+    await db.algorithm.create({
+      data,
+    });
+
+    return httpResponse(HttpCode.CREATED);
   } catch (error) {
     return httpResponse(HttpCode.INTERNAL_SERVER_ERROR);
   }
@@ -70,4 +90,4 @@ const GET = async () => {
 //   }
 // };
 
-export { GET };
+export { GET, POST };
