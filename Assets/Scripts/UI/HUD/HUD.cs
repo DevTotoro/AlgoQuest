@@ -22,21 +22,29 @@ namespace UI.HUD
         
         private void OnToggleTimerEvent(bool enable)
         {
+            if (timerContainer.activeSelf == enable) return;
+            
             timerContainer.SetActive(enable);
         }
         
         private void OnToggleLeaderboardEvent(bool enable)
         {
+            if (highScoresContainer.activeSelf == enable) return;
+            
             highScoresContainer.SetActive(enable);
         }
 
         private void OnSetTimerEvent(string time)
         {
+            if (timerText.text == time) return;
+            
             timerText.text = time;
         }
 
         private void OnSetLeaderboardEvent(string highScores)
         {
+            if (highScoresText.text == highScores) return;
+            
             highScoresText.text = highScores;
         }
     }

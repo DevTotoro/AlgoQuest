@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4301461127105790441}
   - component: {fileID: 6825572575353843731}
-  - component: {fileID: 715862298419868256}
   - component: {fileID: 2428675342865973974}
   m_Layer: 0
   m_Name: SortingAlgorithmManager
@@ -46,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3594247145
+  GlobalObjectIdHash: 1212561995
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -55,25 +54,6 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &715862298419868256
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5513570871328291311}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a216e3eadb6545149ec114e272619cd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spawnCount: 10
-  spawnPosition: {x: -18, y: 0, z: 0}
-  spawnOffset: {x: 4, y: 0, z: 0}
-  minContainerValue: 1
-  maxContainerValue: 50
-  spawnPrefab: {fileID: 1130434947848106338, guid: 23b3248b6fbf04330ac49aa2f500d7ac,
-    type: 3}
 --- !u!114 &2428675342865973974
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88,3 +68,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   algorithm: 0
   mode: 0
+  spawnPosition: {x: 0, y: 0, z: 5}
+  spacing: 3
+  spawnPrefab: {fileID: 1130434947848106338, guid: 23b3248b6fbf04330ac49aa2f500d7ac,
+    type: 3}

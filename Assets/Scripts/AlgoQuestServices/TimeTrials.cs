@@ -30,7 +30,7 @@ namespace AlgoQuestServices
         {
             var dataPrivate = new CreateTimeTrialPayloadPrivate
             {
-                type = GetAlgorithmType(data.type),
+                type = Algorithms.GetAlgorithmType(data.type),
                 time = data.time,
                 numberOfValues = data.numberOfValues,
                 requiredMoves = data.requiredMoves,
@@ -44,7 +44,7 @@ namespace AlgoQuestServices
         {
             var dataPrivate = new GetTimeTrialsQueryParamsPrivate
             {
-                type = GetAlgorithmType(queryParams.type),
+                type = Algorithms.GetAlgorithmType(queryParams.type),
                 numberOfValues = queryParams.numberOfValues,
                 requiredMoves = queryParams.requiredMoves,
             };
@@ -83,18 +83,6 @@ namespace AlgoQuestServices
                         $"&requiredMoves={queryParams.requiredMoves}";
             
             return await Http.Get<GetTimeTrialsResponsePayload[]>($"time-trials", query);
-        }
-        
-        // ====================
-        
-        private static string GetAlgorithmType(Gameplay.SortingAlgorithm algorithm)
-        {
-            return algorithm switch
-            {
-                Gameplay.SortingAlgorithm.BubbleSort => "BUBBLE_SORT",
-                Gameplay.SortingAlgorithm.SelectionSort => "SELECTION_SORT",
-                _ => "UNKNOWN"
-            };
         }
     }
 }
