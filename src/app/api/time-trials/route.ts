@@ -47,7 +47,7 @@ const GET = async (request: NextRequest) => {
           : undefined,
       },
       orderBy: {
-        createdAt: 'desc',
+        time: 'asc',
       },
     });
 
