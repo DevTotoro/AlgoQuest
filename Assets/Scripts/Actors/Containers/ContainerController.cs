@@ -26,7 +26,7 @@ namespace Actors.Containers
         public int Index { private get; set; }
         
         public event UnityAction OnInitialized;
-        public event UnityAction<int, int> OnInteracted;
+        public event UnityAction<string, int, int, int> OnInteracted;
 
         private void Awake()
         {
@@ -46,11 +46,9 @@ namespace Actors.Containers
         [Rpc(SendTo.Server)]
         private void InteractRpc(string sessionId, int value, RpcParams rpcParams = default)
         {
-            EventManager.Singleton.PlayerEvents.EmitRegisterSessionIdEvent(sessionId);
-
             OnContainerInteractRpc(rpcParams.Receive.SenderClientId, Value);
 
-            OnInteracted?.Invoke(Index, value);
+            OnInteracted?.Invoke(sessionId, Index, Value, value);
             
             _value.Value = value;
         }

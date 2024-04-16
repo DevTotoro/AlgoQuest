@@ -85,11 +85,7 @@ namespace Gameplay
              }
              
              if (IsServer)
-             {
-                 EventManager.Singleton.PlayerEvents.RegisterSessionIdEvent += OnRegisterSessionId;
-                 
                  FetchAlgorithmConfig();
-             }
          }
          
          public override void OnNetworkDespawn()
@@ -170,23 +166,21 @@ namespace Gameplay
                  InitializeAlgorithm();
          }
          
-         private void OnRegisterSessionId(string sessionId)
-         {
-             if (!IsServer || _sessionIds.Contains(sessionId)) return;
-             
-             _sessionIds.Add(sessionId);
-         }
-
-         private async void OnContainerInteracted(int index, int value)
+         private async void OnContainerInteracted(string sessionId, int index, int prevValue, int newValue)
          {
              if (!IsServer) return;
              
-             _timer.Start();
+             if (!_sessionIds.Contains(sessionId))
+                 _sessionIds.Add(sessionId);
              
-             var (container1State, container2State) = _swaps[_swapIndex];
-
-             if (mode == SortingAlgorithmMode.TimeTrial && index != container1State.Index &&
-                 index != container2State.Index)
+             if (!_timer.IsRunning)
+                 _timer.Start();
+             
+             var moveValid = IsMoveValid(index, newValue);
+             
+             await LogContainerInteraction(sessionId, index, prevValue, newValue, moveValid);
+             
+             if (!moveValid)
              {
                  GameOverRpc();
                  
@@ -194,31 +188,15 @@ namespace Gameplay
                  
                  return;
              }
-
-             var targetValue = index == container1State.Index
-                 ? container1State.TargetValue
-                 : container2State.TargetValue;
              
-             if (value == targetValue)
+             var moveCorrect = IsMoveCorrect(index, newValue);
+             if (moveCorrect)
              {
                  if (_firstContainerSwapSuccess)
                      await NextSwap();
                  else
                      _firstContainerSwapSuccess = true;
 
-                 return;
-             }
-             
-             var possibleValues = index == container1State.Index
-                 ? container1State.PossibleValues
-                 : container2State.PossibleValues;
-             
-             if (mode == SortingAlgorithmMode.TimeTrial && !possibleValues.Contains(value))
-             {
-                 GameOverRpc();
-                 
-                 _timer.Stop();
-                 
                  return;
              }
              
@@ -359,6 +337,33 @@ namespace Gameplay
              InitializeContainers();
          }
          
+         private bool IsMoveValid(int index, int value)
+         {
+             if (mode != SortingAlgorithmMode.TimeTrial) return true;
+             
+             var (container1State, container2State) = _swaps[_swapIndex];
+
+             var indexValid = index == container1State.Index || index == container2State.Index;
+             if (!indexValid) return false;
+             
+             var possibleValues = index == container1State.Index
+                 ? container1State.PossibleValues
+                 : container2State.PossibleValues;
+             
+             return possibleValues.Contains(value);
+         }
+         
+         private bool IsMoveCorrect(int index, int value)
+         {
+             var (container1State, container2State) = _swaps[_swapIndex];
+
+             var indexCorrect = index == container1State.Index || index == container2State.Index;
+             if (!indexCorrect) return false;
+
+             return value ==
+                    (index == container1State.Index ? container1State.TargetValue : container2State.TargetValue);
+         }
+         
          // ====================
          
          private async void FetchAlgorithmConfig()
@@ -410,6 +415,26 @@ namespace Gameplay
              _highScores.Value = highScoresString;
              
              SetHighScoresRpc(highScoresString);
+         }
+
+         private async Task LogContainerInteraction(string sessionId, int index, int containerPrevValue,
+             int containerNewValue, bool isValid)
+         {
+             if (!IsServer) return;
+
+             var data = new AlgoQuestServices.ContainerInteractions.CreateContainerInteractionPayload
+             {
+                 containerIndex = index,
+                 receivedValue = containerPrevValue,
+                 placedValue = containerNewValue,
+                 isValid = isValid,
+                 containerValues = ContainerControllers.Select((container, i) => i == index ? -1 : container.Value).ToArray(),
+                 algorithmType = algorithm,
+                 gameMode = mode,
+                 sessionId = sessionId
+             };
+
+             await AlgoQuestServices.ContainerInteractions.Create(data);
          }
      }
 }

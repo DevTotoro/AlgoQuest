@@ -31,5 +31,15 @@ namespace AlgoQuestServices
                 _ => "UNKNOWN"
             };
         }
+        
+        public static string GetAlgorithmMode(Gameplay.SortingAlgorithmMode mode)
+        {
+            return mode switch
+            {
+                Gameplay.SortingAlgorithmMode.Guided => "GUIDED",
+                Gameplay.SortingAlgorithmMode.TimeTrial => "TIME_TRIAL",
+                _ => "UNKNOWN"
+            };
+        }
     }
 }
