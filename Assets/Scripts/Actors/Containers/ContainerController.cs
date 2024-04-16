@@ -14,6 +14,7 @@ namespace Actors.Containers
         [SerializeField] private GameObject highlightContainer;
         [Space]
         [SerializeField] private TMPro.TextMeshProUGUI valueText;
+        [SerializeField] private GameObject lockedText;
         
         private bool _isValueInitialized, _isLockedInitialized;
         
@@ -140,8 +141,9 @@ namespace Actors.Containers
             
             var isLocked = _isLocked.Value;
             
-            valueText.text = isLocked ? "locked" : Value == -1 ? "null" : Value.ToString();
+            valueText.text = Value == -1 ? "null" : Value.ToString();
             
+            lockedText.SetActive(isLocked);
             lockedContainer.SetActive(isLocked);
             unlockedContainer.SetActive(!isLocked);
         }
