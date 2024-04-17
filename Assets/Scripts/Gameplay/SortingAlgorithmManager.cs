@@ -256,8 +256,10 @@ namespace Gameplay
          {
              if (!IsServer) return;
              
-             foreach (var container in ContainerControllers)
-                 container.Initialize(Random.Range(_minVal, _maxVal), true);
+             var values = Core.Helpers.GetUnsortedRandomArray(ContainerControllers.Length, _minVal, _maxVal);
+             
+             for (var i = 0; i < ContainerControllers.Length; i++)
+                 ContainerControllers[i].Initialize(values[i], true);
          }
          
          private void InitializeAlgorithm()
