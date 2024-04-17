@@ -31,7 +31,6 @@ namespace Core
             }
             
             Singleton = this;
-            DontDestroyOnLoad(gameObject);
             
             NetworkManager.Singleton.SceneManager.OnLoadComplete += OnSceneLoaded;
             
