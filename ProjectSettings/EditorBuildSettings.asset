@@ -14,4 +14,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/AlgorithmScenes/BubbleSort/BubbleSortTimeTrial.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/AlgorithmScenes/SelectionSort/SelectionSortGuided.unity
+    guid: 27da5d8ab5a544c75a071e0bdffe58f6
+  - enabled: 1
+    path: Assets/Scenes/AlgorithmScenes/SelectionSort/SelectionSortTimeTrial.unity
+    guid: c32392b8e3e9e4c928e68d8ba73297e6
   m_configObjects: {}
