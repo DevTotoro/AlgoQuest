@@ -8,6 +8,7 @@ using LogType = Events.LogType;
 
 namespace Actors.Player
 {
+    [RequireComponent(typeof(CapsuleCollider))]
     public class PlayerController : NetworkBehaviour
     {
         [Header("Movement")]
@@ -20,11 +21,17 @@ namespace Actors.Player
         [SerializeField] private Vector3 interactionOffset = Vector3.zero;
         [SerializeField] private LayerMask interactionLayerMask;
         
+        [Header("Collisions")]
+        [SerializeField] private bool enableCollisions = true;
+        [SerializeField] private LayerMask collisionLayerMask;
+        
         [Header("References")]
         [SerializeField] private CinemachineVirtualCamera virtualCamera;
         [SerializeField] private AudioListener audioListener;
         [Space]
         [SerializeField] private TMPro.TextMeshProUGUI valueText;
+
+        private CapsuleCollider _capsuleCollider;
         
         // Movement
         private Vector3 _movementDirection = Vector3.zero;
@@ -58,6 +65,8 @@ namespace Actors.Player
 
         private void Awake()
         {
+            _capsuleCollider = GetComponent<CapsuleCollider>();
+            
             _containerValue.OnValueChanged += OnDataChanged;
         }
 
@@ -66,6 +75,7 @@ namespace Actors.Player
             _movementDistance = movementSpeed * Time.deltaTime;
             
             CheckForInteractive();
+            HandleCollisions();
             HandleMovement();
             HandleRotation();
         }
@@ -129,6 +139,40 @@ namespace Actors.Player
         }
         
         // ====================
+
+        private void HandleCollisions()
+        {
+            if (!IsOwner || !enableCollisions) return;
+
+            var position = transform.position;
+            var top = position + _capsuleCollider.center + Vector3.up * _capsuleCollider.height / 2;
+            var bottom = position + _capsuleCollider.center - Vector3.up * _capsuleCollider.height / 2;
+            
+            // Check if player can move in the direction of the input
+            if (!Physics.CapsuleCast(top, bottom, _capsuleCollider.radius, _movementDirection, _movementDistance,
+                    collisionLayerMask)) return;
+            
+            // Attempt to move in the X axis
+            var moveDirectionX = new Vector3(_movementDirection.x, 0, 0).normalized;
+            if (!Physics.CapsuleCast(top, bottom, _capsuleCollider.radius, moveDirectionX, _movementDistance,
+                    collisionLayerMask))
+            {
+                _movementDirection = moveDirectionX;
+                return;
+            }
+            
+            // Attempt to move in the Z axis
+            var moveDirectionZ = new Vector3(0, 0, _movementDirection.z).normalized;
+            if (!Physics.CapsuleCast(top, bottom, _capsuleCollider.radius, moveDirectionZ, _movementDistance,
+                    collisionLayerMask))
+            {
+                _movementDirection = moveDirectionZ;
+                return;
+            }
+            
+            // Player cannot move
+            _movementDirection = Vector3.zero;
+        }
 
         private void HandleMovement()
         {

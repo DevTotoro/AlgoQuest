@@ -281,6 +281,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5521508714431337811}
+  - component: {fileID: 3168370046759569780}
   - component: {fileID: 7015786433225466044}
   - component: {fileID: 5199532092738296224}
   m_Layer: 6
@@ -307,6 +308,29 @@ Transform:
   - {fileID: 5047484107555181099}
   m_Father: {fileID: 6789161033634915942}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &3168370046759569780
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3376676916680269016}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.75
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &7015786433225466044
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -356,6 +380,10 @@ MonoBehaviour:
   interactionDistance: 1.5
   interactionOffset: {x: 0, y: 1, z: 0}
   interactionLayerMask:
+    serializedVersion: 2
+    m_Bits: 128
+  enableCollisions: 1
+  collisionLayerMask:
     serializedVersion: 2
     m_Bits: 128
   virtualCamera: {fileID: 5631238928922316757}
