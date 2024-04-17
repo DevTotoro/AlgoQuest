@@ -4,6 +4,7 @@ using Cinemachine;
 using Core;
 using Events;
 using Interfaces;
+using LogType = Events.LogType;
 
 namespace Actors.Player
 {
@@ -83,6 +84,9 @@ namespace Actors.Player
             audioListener.enabled = true;
             
             virtualCamera.Priority = 1;
+            
+            if (!IsServer)
+                EventManager.Singleton.LogEvents.EmitNetworkLogEvent(LogType.HOST_JOINED);
         }
         
         // ====================

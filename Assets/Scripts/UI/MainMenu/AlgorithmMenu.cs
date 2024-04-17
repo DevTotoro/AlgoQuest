@@ -21,6 +21,8 @@ namespace UI.MainMenu
             {
                 await RelayService.Singleton.CreateHost();
                 
+                await Core.Helpers.Log(Events.LogType.HOST_CREATED);
+                
                 SceneService.LoadSceneNetwork(scene);
             }
             catch (Unity.Services.Relay.RelayServiceException e)

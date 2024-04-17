@@ -10,6 +10,7 @@ namespace Events
         public PlayerEvents PlayerEvents { get; private set; }
         public GameplayEvents GameplayEvents { get; private set; }
         public UIEvents UIEvents { get; private set; }
+        public LogEvents LogEvents { get; private set; }
 
         private void OnEnable()
         {
@@ -26,6 +27,7 @@ namespace Events
             PlayerEvents = new PlayerEvents();
             GameplayEvents = new GameplayEvents();
             UIEvents = new UIEvents();
+            LogEvents = new LogEvents();
         }
     }
 }

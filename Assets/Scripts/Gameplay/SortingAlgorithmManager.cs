@@ -61,6 +61,10 @@ namespace Gameplay
          private void Awake()
          {
              EventManager.Singleton.GameplayEvents.RequestRestartEvent += RequestRestartRpc;
+             
+             EventManager.Singleton.UIEvents.CloseApplicationEvent += OnApplicationClose;
+             
+             EventManager.Singleton.LogEvents.NetworkLogEvent += NetworkLogRpc;
          }
          
          private void Update()
@@ -122,12 +126,16 @@ namespace Gameplay
          private void GameOverRpc()
          {
              EventManager.Singleton.GameplayEvents.EmitGameOverEvent();
+             
+             EventManager.Singleton.LogEvents.EmitNetworkLogEvent(Events.LogType.GAME_OVER);
          }
          
          [Rpc(SendTo.Everyone)]
          private void GameWonRpc()
          {
              EventManager.Singleton.GameplayEvents.EmitGameWonEvent();
+             
+             EventManager.Singleton.LogEvents.EmitNetworkLogEvent(Events.LogType.GAME_WON);
          }
          
          [Rpc(SendTo.Server)]
@@ -143,6 +151,12 @@ namespace Gameplay
          {
              EventManager.Singleton.GameplayEvents.EmitRestartEvent();
              EventManager.Singleton.UIEvents.EmitSetTimerEvent("00:00:00");
+         }
+
+         [Rpc(SendTo.Server)]
+         private void NetworkLogRpc(string sessionId, Events.LogType type)
+         {
+             Log(sessionId, type);
          }
          
          // ====================
@@ -172,9 +186,13 @@ namespace Gameplay
              
              if (!_sessionIds.Contains(sessionId))
                  _sessionIds.Add(sessionId);
-             
-             if (!_timer.IsRunning)
+
+             if (mode == SortingAlgorithmMode.TimeTrial && !_timer.IsRunning)
+             {
+                 EventManager.Singleton.LogEvents.EmitNetworkLogEvent(Events.LogType.GAME_STARTED);
+                 
                  _timer.Start();
+             }
              
              var moveValid = IsMoveValid(index, newValue);
              
@@ -201,6 +219,13 @@ namespace Gameplay
              }
              
              _firstContainerSwapSuccess = false;
+         }
+
+         private void OnApplicationClose()
+         {
+             EventManager.Singleton.LogEvents.EmitNetworkLogEvent(IsServer
+                 ? Events.LogType.HOST_CLOSED
+                 : Events.LogType.HOST_LEFT);
          }
          
          // ====================
@@ -266,6 +291,8 @@ namespace Gameplay
          private void InitializeGuidedMode()
          {
              UnlockCurrentContainers();
+             
+             EventManager.Singleton.LogEvents.EmitNetworkLogEvent(Events.LogType.GAME_STARTED);
          }
          
          private void InitializeTimeTrialMode()
@@ -335,6 +362,8 @@ namespace Gameplay
              _timer.Reset();
              
              InitializeContainers();
+             
+             EventManager.Singleton.LogEvents.EmitNetworkLogEvent(Events.LogType.GAME_RESTARTED);
          }
          
          private bool IsMoveValid(int index, int value)
@@ -428,13 +457,37 @@ namespace Gameplay
                  receivedValue = containerPrevValue,
                  placedValue = containerNewValue,
                  isValid = isValid,
-                 containerValues = ContainerControllers.Select((container, i) => i == index ? -1 : container.Value).ToArray(),
+                 containerValues = ContainerControllers.Select((container, i) => i == index ? containerNewValue : container.Value).ToArray(),
                  algorithmType = algorithm,
                  gameMode = mode,
                  sessionId = sessionId
              };
 
              await AlgoQuestServices.ContainerInteractions.Create(data);
+         }
+
+         private async void Log(string sessionId, Events.LogType type)
+         {
+             if (!IsServer) return;
+             
+             var containers = _containers?.Length > 0
+                 ? ContainerControllers.Select(container => container.Value).ToArray()
+                 : null;
+             
+            var data = new AlgoQuestServices.Logs.CreateLogPayload
+            {
+                type = type,
+                
+                algorithmType = algorithm,
+                gameMode = mode,
+                containerValues = containers,
+                
+                sessionId = sessionId,
+                
+                nullContainerValues = containers == null
+            };
+            
+            await AlgoQuestServices.Logs.Create(data);
          }
      }
 }

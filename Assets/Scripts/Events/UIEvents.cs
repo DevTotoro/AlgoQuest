@@ -10,6 +10,8 @@ namespace Events
         public event UnityAction<string> SetTimerEvent;
         public event UnityAction<string> SetLeaderboardEvent;
         
+        public event UnityAction CloseApplicationEvent;
+        
         public void EmitToggleTimerEvent(bool enable)
         {
             ToggleTimerEvent?.Invoke(enable);
@@ -28,6 +30,11 @@ namespace Events
         public void EmitSetLeaderboardEvent(string highScores)
         {
             SetLeaderboardEvent?.Invoke(highScores);
+        }
+        
+        public void EmitCloseApplicationEvent()
+        {
+            CloseApplicationEvent?.Invoke();
         }
     }
 }
