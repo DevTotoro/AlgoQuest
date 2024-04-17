@@ -11,7 +11,7 @@ namespace Network
     public class RelayService : MonoBehaviour
     {
         [Header("Configuration")]
-        [SerializeField] private int maxConnections = 4;
+        [SerializeField] private int maxConnections = 2;
         
         public static RelayService Singleton { get; private set; }
 
