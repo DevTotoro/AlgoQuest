@@ -235,16 +235,18 @@ namespace Gameplay
              if (!IsServer) return;
              
              _containers = new GameObject[spawnCount];
+
+             var firstContainerPosition = spawnPosition - new Vector3(spacing * (spawnCount - 1) / 2, 0, 0);
              
              for (var i = 0; i < spawnCount; i++)
              {
-                 var containerSpawnPosition = spawnPosition + new Vector3(i * spacing, 0, 0);
+                 var containerSpawnPosition = firstContainerPosition + new Vector3(i * spacing, 0, 0);
 
                  _containers[i] = Instantiate(spawnPrefab, containerSpawnPosition, Quaternion.identity, transform);
-                 
+
                  var networkObject = _containers[i].GetComponent<NetworkObject>();
                  networkObject.Spawn();
-                 
+
                  var containerController = _containers[i].GetComponent<ContainerController>();
                  containerController.Index = i;
                  containerController.OnInitialized += OnContainerInitialized;
