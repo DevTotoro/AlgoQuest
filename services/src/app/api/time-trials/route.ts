@@ -14,7 +14,7 @@ const GET = async (request: NextRequest) => {
   }
 
   const numberOfValuesDiff = 2;
-  const requiredMovesDiff = 5;
+  const requiredMovesDiff = 2;
 
   const take = params.take ? parseInt(params.take, 10) : 10;
   const numberOfValues = params.numberOfValues ? parseInt(params.numberOfValues, 10) : undefined;
