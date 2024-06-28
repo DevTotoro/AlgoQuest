@@ -8,6 +8,7 @@
 \usepackage{parskip}
 \usepackage{graphicx}
 \usepackage[colorlinks=true, allcolors=black]{hyperref}
+\usepackage[acronym,toc]{glossaries}
 
 \setmainfont{Ubuntu}
 
@@ -16,7 +17,15 @@
 \setlength{\parskip}{10pt}
 \setlength\parindent{0pt}
 
+\makeglossaries
+
 % Commands
 \newcommand{\thesistitle}{Μελέτη και δημιουργία 3D εικονικού κόσμου για διδασκαλία αλγορίθμων}
 \newcommand{\thesisauthor}{Θεόδωρος Μπάτσικας}
 \newcommand{\thesisauthorid}{Α.Μ. 1058113}
+
+% Acronyms
+\newacronym{3d}{3D}{Τρισδιάστατος χώρος}
+
+% Glossary
+\newglossaryentry{vw}{name=εικονικός κόσμος,description={Εικονικός κόσμος}}
