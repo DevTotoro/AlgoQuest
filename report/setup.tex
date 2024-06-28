@@ -5,13 +5,26 @@
 \usepackage{fontspec}
 \usepackage{float}
 \usepackage{graphicx}
+\usepackage{fancyhdr}
 
 \setmainfont{Ubuntu}
-\setmonofont{Fira Code}
 
 \pagestyle{fancy}
 
-% Variables
+\setlength{\parskip}{10pt}
+\setlength\parindent{0pt}
+
+% Commands
 \newcommand{\thesistitle}{Μελέτη και δημιουργία 3D εικονικού κόσμου για διδασκαλία αλγορίθμων}
 \newcommand{\thesisauthor}{Θεόδωρος Μπάτσικας}
 \newcommand{\thesisauthorid}{Α.Μ. 1058113}
+
+\newcommand*\hideheader{
+    \fancyhead{}
+    \renewcommand{\headrulewidth}{0pt}
+}
+
+\newcommand*\showheader{
+    \fancyhead[L]{\slshape{\thesistitle}}
+    \renewcommand{\headrulewidth}{0.4pt}
+}
