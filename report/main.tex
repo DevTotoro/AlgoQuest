@@ -10,17 +10,16 @@
     % Initial header and footer
     \fancyhf{}
     \fancyfoot[R]{\textit{\thepage}}
-    \renewcommand{\headrulewidth}{0pt}
+    \hideheader
     \setcounter{page}{2}
     
     \include{sections/0/copyright}
     \include{sections/0/dedication}
 
     % Main header and footer
-    \fancyhead[L]{\slshape{\thesistitle}}
     \fancyfoot[L]{\textit{\thesisauthor{} - \thesisauthorid{}}}
-    \renewcommand{\headrulewidth}{0.4pt}
     \renewcommand{\footrulewidth}{0.4pt}
+    \showheader
     
     \include{sections/0/abstract_gr}
     \include{sections/0/abstract_en}
