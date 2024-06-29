@@ -45,17 +45,23 @@
     \printglossary[title=Γλωσσάρι,toctitle=Γλωσσάρι]
     \pagebreak
     
-    % Chapter titles
-    \titleformat{\section}[block]
-        {\mbox{}\\\LARGE\bfseries}
-        {Κεφάλαιο \thesection\\[1.5em]}
-        {0pt}
-        {\Huge}
-        \titlespacing{\section}{0pt}{*3}{*10}
+    \modifiedsectiontitle
     
     \pagenumbering{arabic}
     \setcounter{page}{1}
     
     % Chapters
     \include{sections/1/index}
+    
+    hi\cite{batsikas_teaching_2023}
+
+    \defaultsectiontitle
+    
+    % Bibliography
+    \pagebreak
+    \showheader
+    \phantomsection
+    \addcontentsline{toc}{section}{Αναφορές}
+    \bibliographystyle{IEEEtran}
+    \bibliography{refs}
 \end{document}
