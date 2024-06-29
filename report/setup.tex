@@ -25,6 +25,16 @@
 \newcommand{\thesisauthor}{Θεόδωρος Μπάτσικας}
 \newcommand{\thesisauthorid}{Α.Μ. 1058113}
 
+\newcommand*\hideheader{
+    \fancyhead{}
+    \renewcommand{\headrulewidth}{0pt}
+}
+
+\newcommand*\showheader{
+    \fancyhead[L]{\slshape{\thesistitle}}
+    \renewcommand{\headrulewidth}{0.4pt}
+}
+
 % Acronyms
 \newacronym{3d}{3D}{Τρισδιάστατος χώρος}
 
