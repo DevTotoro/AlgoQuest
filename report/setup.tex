@@ -9,7 +9,7 @@
 \usepackage{parskip}
 \usepackage{graphicx}
 \usepackage[colorlinks=true, allcolors=black]{hyperref}
-\usepackage[acronym,toc]{glossaries}
+\usepackage[acronym,toc,nopostdot,nogroupskip]{glossaries}
 
 \setmainfont{Ubuntu}
 \setmonofont{Fira Code}
@@ -50,9 +50,28 @@
 \newacronym{lts}{LTS}{Long-Term Support}
 \newacronym{unity_ecs}{ECS}{Entity Component System}
 \newacronym{unity_dots}{DOTS}{Data-Oriented Technology Stack}
+\newacronym{rest}{REST}{Representational State Transfer}
+\newacronym{api}{API}{Application Programming Interface}
+\newacronym{http}{HTTP}{Hypertext Transfer Protocol}
+\newacronym{sql}{SQL}{Structured Query Language}
+\newacronym{nosql}{NoSQL}{Not Only SQL}
+\newacronym{rdbms}{RDBMS}{Relational Database Management System}
+\newacronym{jit}{JIT}{Just-In-Time}
+\newacronym{aws}{AWS}{Amazon Web Services}
 
 % Glossary
 \newglossaryentry{user}{name=χρήστης,description={Οποισδήποτε χρήστης που δεν είναι παίκτης}}\glsadd{user}
 \newglossaryentry{player}{name=παίκτης,description={Οποιοσδήποτε χρήστης που παίζει το παιχνίδι}}\glsadd{player}
 \newglossaryentry{cheat_code}{name=cheat code,description={Κωδικός που επιτρέπει πρόσβαση σε κρυφές λειτουργίες ενός παιχνιδιού}}
 \newglossaryentry{context_menu}{name=context menu,description={Μενού περιβάλλοντος που εμφανίζεται όταν ο χρήστης κάνει δεξί κλικ πάνω σε ένα αντικείμενο}}
+\newglossaryentry{stateless}{name=stateless,description={Χαρακτηριστικό του συστήματος που δεν αποθηκεύει κατάσταση}}
+\newglossaryentry{docker_container}{name=Docker container,description={Εικονικό περιβάλλον που εκτελείται ανεξάρτητα από το λειτουργικό σύστημα του υπολογιστή}}
+\newglossaryentry{docker_image}{name=Docker image,description={Εικονικό περιβάλλον που περιέχει όλα τα απαραίτητα εργαλεία για την εκτέλεση ενός προγράμματος}}
+\newglossaryentry{js_runtime}{name=JavaScript runtime,description={Περιβάλλον εκτέλεσης JavaScript κώδικα}}
+\newglossaryentry{prod_env}{name=production environment,description={Περιβάλλον εκτέλεσης που χρησιμοποιείται για την παραγωγή του τελικού προϊόντος}}
+\newglossaryentry{framework}{name=framework,description={Σύνολο βιβλιοθηκών και εργαλείων που χρησιμοποιούνται για την ανάπτυξη εφαρμογών}}
+\newglossaryentry{endpoint}{name=endpoint,description={Σημείο πρόσβασης σε ένα σύστημα}}
+\newglossaryentry{bucket}{name=data storage bucket,description={Αποθηκευτικός χώρος στον οποίο μπορούν να αποθηκευτούν αρχεία}}
+\newglossaryentry{data_pipeline}{name=data pipeline,description={Αγωγός ροής δεδομένων}}
+\newglossaryentry{data_warehouse}{name=data warehouse,description={Αποθήκη μεγάλου όγκου δεδομένων}}
+\newglossaryentry{server}{name=server,description={Διακομιστής}}
