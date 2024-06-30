@@ -12,11 +12,14 @@
 \usepackage[acronym,toc]{glossaries}
 
 \setmainfont{Ubuntu}
+\setmonofont{Fira Code}
 
 \pagestyle{fancy}
 
 \setlength{\parskip}{10pt}
 \setlength\parindent{0pt}
+
+\setlocalecaption{greek}{figure}{Εικόνα}
 
 \makeglossaries
 
@@ -43,7 +46,13 @@
 }
 
 % Acronyms
-\newacronym{3d}{3D}{Τρισδιάστατος χώρος}
+\newacronym{3d}{3D}{Three Dimensional}
+\newacronym{lts}{LTS}{Long-Term Support}
+\newacronym{unity_ecs}{ECS}{Entity Component System}
+\newacronym{unity_dots}{DOTS}{Data-Oriented Technology Stack}
 
 % Glossary
-\newglossaryentry{vw}{name=εικονικός κόσμος,description={Εικονικός κόσμος}}
+\newglossaryentry{user}{name=χρήστης,description={Οποισδήποτε χρήστης που δεν είναι παίκτης}}\glsadd{user}
+\newglossaryentry{player}{name=παίκτης,description={Οποιοσδήποτε χρήστης που παίζει το παιχνίδι}}\glsadd{player}
+\newglossaryentry{cheat_code}{name=cheat code,description={Κωδικός που επιτρέπει πρόσβαση σε κρυφές λειτουργίες ενός παιχνιδιού}}
+\newglossaryentry{context_menu}{name=context menu,description={Μενού περιβάλλοντος που εμφανίζεται όταν ο χρήστης κάνει δεξί κλικ πάνω σε ένα αντικείμενο}}
