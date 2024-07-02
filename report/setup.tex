@@ -3,11 +3,13 @@
 \usepackage[LGR]{fontenc}
 \usepackage[english,greek]{babel}
 \usepackage{fontspec}
+\usepackage{afterpage}
 \usepackage{fancyhdr}
 \usepackage{titlesec}
 \usepackage{float}
 \usepackage{parskip}
 \usepackage{graphicx}
+\usepackage[hyphens]{url}
 \usepackage[colorlinks=true, allcolors=black]{hyperref}
 \usepackage[acronym,toc,nopostdot,nogroupskip]{glossaries}
 
@@ -15,6 +17,10 @@
 \setmonofont{Fira Code}
 
 \pagestyle{fancy}
+
+\hypersetup{breaklinks=true}
+\urlstyle{same}
+\Urlmuskip=0mu plus 1mu
 
 \setlength{\parskip}{10pt}
 \setlength\parindent{0pt}
@@ -81,9 +87,9 @@
 \newglossaryentry{time_trial}{name=time trial,description={Αγώνας κατά τον οποίο ο παίκτης προσπαθεί να ολοκληρώσει μία διαδικασία όσο πιο γρήγορα μπορεί}}
 \newglossaryentry{null}{name=null,description={Τιμή που χρησιμοποιείται για να υποδηλώσει την απουσία τιμής}}
 \newglossaryentry{multiplayer}{name=multiplayer,description={Παιχνίδι στο οποίο παίζουν περισσότεροι από ένας παίκτες}}
-\newglossaryentry{unity_client}{name=client,description={Παίκτης που συνδέεται στο παιχνίδι και δεν είναι ο διακομιστής}}
-\newglossaryentry{unity_host}{name=host,description={Παίκτης που διαχειρίζεται το παιχνίδι και είναι ο ιδιοκτήτης του κόσμου}}
-\newglossaryentry{unity_server}{name=server,description={Διακομιστής που διαχειρίζεται την επικοινωνία μεταξύ των παικτών}}
+\newglossaryentry{unity_client}{name=Client,description={Παίκτης που συνδέεται στο παιχνίδι και δεν είναι ο διακομιστής}}
+\newglossaryentry{unity_host}{name=Host,description={Παίκτης που διαχειρίζεται το παιχνίδι και είναι ο ιδιοκτήτης του κόσμου}}
+\newglossaryentry{unity_server}{name=Server,description={Διακομιστής που διαχειρίζεται την επικοινωνία μεταξύ των παικτών}}
 \newglossaryentry{developer}{name=developer,description={Κατασκευαστής λογισμικού}}
 \newglossaryentry{indie_game}{name=indie game,description={Παιχνίδι που αναπτύσσεται από μικρή ομάδα ανεξάρτητων προγραμματιστών}}
 \newglossaryentry{mobile_game}{name=mobile game,description={Παιχνίδι που σχεδιάστηκε για να εκτελείται σε κινητές συσκευές}}
@@ -93,3 +99,4 @@
 \newglossaryentry{open_source}{name=open source,description={Λογισμικό του οποίου ο πηγαίος κώδικας είναι διαθέσιμος για το κοινό}}
 \newglossaryentry{rendering}{name=rendering,description={Διαδικασία απεικόνισης ενός αντικειμένου σε μία οθόνη}}
 \newglossaryentry{photorealistic}{name=photorealistic,description={Αναπαράσταση ενός αντικειμένου με τρόπο που μοιάζει με φωτογραφία}}
+\newglossaryentry{avatar}{name=avatar,description={Εικονικός χαρακτήρας που χρησιμοποιείται για την αναπαράσταση του παίκτη}}

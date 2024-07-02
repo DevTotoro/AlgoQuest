@@ -3,69 +3,71 @@
 \input{setup}
 
 \begin{document}
-    \pagenumbering{roman}
+    \fancyhf{}
+    \hideheader
     
     \include{sections/0/title}
-
-    % Initial header and footer
-    \fancyhf{}
-    \fancyfoot[R]{\textit{\thepage}}
-    \hideheader
-    \setcounter{page}{2}
-    
+    \afterpage{\null\newpage}
     \include{sections/0/copyright}
+    \afterpage{\null\newpage}
     \include{sections/0/dedication}
-
-    % Main header and footer
-    \fancyfoot[L]{\textit{\thesisauthor{} - \thesisauthorid{}}}
-    \renewcommand{\footrulewidth}{0.4pt}
-    \showheader
-    
+    \afterpage{\null\newpage}
     \include{sections/0/abstract_gr}
+    \afterpage{\null\newpage}
     \include{sections/0/abstract_en}
+    \afterpage{\null\newpage}
+    
+    \afterpage{
+        % Initial header and footer
+        \fancyfoot[R]{\textit{\thepage}}
+        \pagenumbering{roman}
+        \setcounter{page}{1}
+        
+        % Table of contents
+        \tableofcontents
+        \pagebreak
 
-    % Table of contents
-    \phantomsection
-    \addcontentsline{toc}{section}{Περιεχόμενα}
-    \tableofcontents
-    \pagebreak
-    
-    % List of figures
-    \renewcommand{\listfigurename}{Λίστα εικόνων}
-    \phantomsection
-    \addcontentsline{toc}{section}{Λίστα εικόνων}
-    \listoffigures
-    \pagebreak
-    
-    % Acronyms
-    \printglossary[type=\acronymtype,title=Συντομογραφίες,toctitle=Συντομογραφίες,nonumberlist]
-    \pagebreak
+        % List of figures
+        \renewcommand{\listfigurename}{Λίστα εικόνων}
+        \phantomsection
+        \addcontentsline{toc}{section}{Λίστα εικόνων}
+        \listoffigures
+        \pagebreak
 
-    % Glossary
-    \printglossary[title=Γλωσσάρι,toctitle=Γλωσσάρι,nonumberlist]
-    \pagebreak
-    
-    \modifiedsectiontitle
-    
-    \pagenumbering{arabic}
-    \setcounter{page}{1}
-    
-    % Chapters
-    \include{sections/1/index}
-    \include{sections/2/index}
-    \include{sections/3/index}
-    \include{sections/4/index}
+        % Acronyms
+        \printglossary[type=\acronymtype,title=Συντομογραφίες,toctitle=Συντομογραφίες,nonumberlist]
+        \pagebreak
 
-    \defaultsectiontitle
-    
-    % Bibliography
-    \pagebreak
-    \showheader
-    \phantomsection
-    \addcontentsline{toc}{section}{Αναφορές}
-    \bibliographystyle{IEEEtran}
-    \bibliography{refs}
-    
-    % Appendices
-    \include{sections/appendices/index}
+        % Glossary
+        \printglossary[title=Γλωσσάρι,toctitle=Γλωσσάρι,nonumberlist]
+        \pagebreak
+
+        % Main header and footer
+        \fancyfoot[L]{\textit{\thesisauthor{} - \thesisauthorid{}}}
+        \renewcommand{\footrulewidth}{0.4pt}
+        \showheader
+        \pagenumbering{arabic}
+        \setcounter{page}{1}
+
+        \modifiedsectiontitle
+
+        % Chapters
+        \include{sections/1/index}
+        \include{sections/2/index}
+        \include{sections/3/index}
+        \include{sections/4/index}
+
+        \defaultsectiontitle
+
+        % Bibliography
+        \pagebreak
+        \showheader
+        \phantomsection
+        \addcontentsline{toc}{section}{Αναφορές}
+        \bibliographystyle{IEEEtran}
+        \bibliography{refs}
+
+        % Appendices
+        \include{sections/appendices/index}
+    }
 \end{document}
