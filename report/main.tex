@@ -34,6 +34,13 @@
         \listoffigures
         \pagebreak
 
+        % List of tables
+        \renewcommand{\listtablename}{Λίστα πινάκων}
+        \phantomsection
+        \addcontentsline{toc}{section}{Λίστα πινάκων}
+        \listoftables
+        \pagebreak
+
         % Acronyms
         \printglossary[type=\acronymtype,title=Συντομογραφίες,toctitle=Συντομογραφίες,nonumberlist,style=super]
         \pagebreak
